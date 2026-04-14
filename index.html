@@ -3,13 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>ТКРС - Сетевое планирование</title>
+    <title>ТКРС - Сетевое планирование | РН-Сервис</title>
     <meta name="theme-color" content="#0f2b3d">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #e9eef3; padding: 20px; }
-        .app-container { max-width: 800px; margin: 0 auto; }
-        .card { background: white; border-radius: 28px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); margin-bottom: 20px; overflow: hidden; }
+        
+        /* --- НОВЫЙ ГЛОБАЛЬНЫЙ ФОН (ТОЛЬКО ЭСТЕТИКА) --- */
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            position: relative;
+            padding: 20px; 
+        }
+        
+        /* --- ЛЕГКАЯ ТЕКСТУРА ДЛЯ СТИЛЯ (НЕ МЕНЯЕТ ЛОГИКУ) --- */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.2) 2%, transparent 2.5%);
+            background-size: 35px 35px;
+            pointer-events: none; /* Чтобы фон не мешал нажимать на кнопки */
+            z-index: 0;
+        }
+        
+        .app-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* --- КАРТОЧКИ СТАЛИ СВЕТЛЕЕ, ЧТОБЫ ЛУЧШЕ ЧИТАТЬ --- */
+        .card { background: rgba(255, 255, 255, 0.98); border-radius: 28px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); margin-bottom: 20px; overflow: hidden; backdrop-filter: blur(0px); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); }
+        
         .card-header { padding: 18px 24px; background: #0f2b3d; color: white; font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
         .card-header span { font-size: 24px; }
         .card-header .collapse-icon { margin-left: auto; font-size: 20px; transition: transform 0.2s; }
@@ -23,19 +54,18 @@
         .brigade-row { cursor: pointer; transition: background 0.1s; }
         .brigade-row:hover { background: #f0f4f8; }
         
-        .tabs { display: flex; background: white; border-radius: 60px; margin-bottom: 24px; overflow-x: auto; }
+        .tabs { display: flex; background: white; border-radius: 60px; margin-bottom: 24px; overflow-x: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .tab-btn { flex: 1; padding: 14px 8px; background: transparent; border: none; font-size: 15px; font-weight: 600; color: #6c7a89; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
         .tab-btn.active { color: #0f2b3d; border-bottom-color: #0f2b3d; background: #f5f9ff; }
         .form-row { margin-bottom: 18px; }
         label { display: block; font-weight: 600; margin-bottom: 8px; color: #1e3a4d; font-size: 14px; }
-        input, select, textarea { width: 100%; padding: 12px 14px; border: 1.5px solid #dce4ec; border-radius: 16px; font-size: 15px; }
+        input, select, textarea { width: 100%; padding: 12px 14px; border: 1.5px solid #dce4ec; border-radius: 16px; font-size: 15px; background: white; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: #2c7cb6; }
         
-        /* Компактные поля даты-времени */
         .compact-datetime { width: auto; min-width: 180px; display: inline-block; }
         .datetime-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
         
-        .btn { padding: 12px 20px; border-radius: 40px; border: none; font-weight: 600; cursor: pointer; background: #eef2f7; }
+        .btn { padding: 12px 20px; border-radius: 40px; border: none; font-weight: 600; cursor: pointer; background: #eef2f7; transition: 0.1s; }
         .btn-primary { background: #0f2b3d; color: white; }
         .btn-warning { background: #e67e22; color: white; }
         .btn-file { background: #2c7cb6; color: white; display: inline-flex; align-items: center; gap: 8px; }
@@ -75,12 +105,50 @@
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .small-well { font-size: 10px; color: #888; margin-top: 4px; }
         .well-ref { font-size: 9px; color: #6c7a89; margin-left: 8px; }
-        @media (max-width: 600px) { .row-2cols { grid-template-columns: 1fr; } .card-content { padding: 16px; } .compact-brigade-table { font-size: 11px; } .compact-datetime { min-width: 140px; } }
+        
+        /* --- СТИЛИ ДЛЯ ЛОГОТИПА (НЕ ЛОМАЕТ ВЕРСТКУ) --- */
+        .logo-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.6);
+            padding: 8px 20px;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+        }
+        .logo-img {
+            height: 45px;
+            width: auto;
+            border-radius: 12px;
+        }
+        .logo-text {
+            font-weight: 800;
+            font-size: 18px;
+            color: #0f2b3d;
+            letter-spacing: 1px;
+        }
+        
+        @media (max-width: 600px) { 
+            .row-2cols { grid-template-columns: 1fr; } 
+            .card-content { padding: 16px; } 
+            .compact-brigade-table { font-size: 11px; } 
+            .compact-datetime { min-width: 140px; }
+            .logo-img { height: 32px; }
+        }
     </style>
 </head>
 <body>
+
 <div class="app-container">
     
+    <!-- === НОВЫЙ БЛОК С ЛОГОТИПОМ РН-СЕРВИС (ДОБАВЛЕН, НЕ УДАЛЕН) === -->
+    <div class="logo-header">
+        <div class="logo-text">⚙️ ТКРС Планирование</div>
+        <img class="logo-img" src="https://upload.wikimedia.org/wikipedia/ru/thumb/9/98/ROSLOGO.png/1200px-ROSLOGO.png" alt="РН-Сервис" 
+             onerror="this.onerror=null; this.src='https://www.rn-service.ru/local/templates/main/img/logo.svg';">
+    </div>
+
     <!-- БЛОК ВСЕ БРИГАДЫ (СВЁРНУТЫЙ ПО УМОЛЧАНИЮ) -->
     <div class="card" id="allBrigadesCard">
         <div class="card-header" id="allBrigadesHeader">
