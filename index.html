@@ -8,7 +8,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        /* --- НОВЫЙ ГЛОБАЛЬНЫЙ ФОН С ЛОГОТИПАМИ РН-СЕРВИС --- */
+        /* --- НОВЫЙ ФОН С ВАШЕЙ КАРТИНКОЙ РН-Сервис.png --- */
         body { 
             font-family: 'Segoe UI', Roboto, sans-serif; 
             background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
@@ -16,44 +16,32 @@
             padding: 20px; 
         }
         
-        /* Слой с логотипом (водяной знак) */
+        /* ВАШЕ ИЗОБРАЖЕНИЕ НА ФОНЕ (замените URL на точный путь к вашему файлу в GitHub) */
         body::before {
-            content: "РН-СЕРВИС";
+            content: "";
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            font-size: clamp(40px, 15vw, 180px);
-            font-weight: 900;
-            color: rgba(15, 43, 61, 0.03);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background-image: url('РН-Сервис.png'); /* ← Здесь ваша картинка */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.15; /* Делаем фон полупрозрачным, чтобы не мешал читать текст */
             pointer-events: none;
             z-index: 0;
-            white-space: pre-wrap;
-            text-align: center;
-            line-height: 1.2;
-            letter-spacing: 10px;
         }
         
-        /* Дополнительный слой с повторяющимся текстом */
+        /* Лёгкий слой для читаемости текста */
         body::after {
-            content: "🛢️ РН-СЕРВИС 🛢️";
+            content: "";
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            font-size: 24px;
-            font-weight: 800;
-            color: rgba(15, 43, 61, 0.02);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 40px;
-            align-items: center;
-            justify-content: space-around;
+            background: rgba(255,255,245,0.3);
             pointer-events: none;
             z-index: 0;
         }
@@ -467,22 +455,124 @@
     let isEditMode = false;
     let supabaseClient = null;
     
+    // ========== ОФЛАЙН-СИНХРОНИЗАЦИЯ ==========
+    let offlineQueue = [];
+    
+    function loadOfflineQueue() {
+        const saved = localStorage.getItem('offlineQueue_tkrs');
+        if (saved) offlineQueue = JSON.parse(saved);
+    }
+    function saveOfflineQueue() {
+        localStorage.setItem('offlineQueue_tkrs', JSON.stringify(offlineQueue));
+    }
+    
+    function addToOfflineQueue(operationType, data) {
+        offlineQueue.push({
+            type: operationType,
+            data: data,
+            timestamp: Date.now(),
+            brigade: currentBrigade
+        });
+        saveOfflineQueue();
+        showNotification('📡 Нет интернета. Данные сохранены локально.', 'warning');
+    }
+    
+    async function syncOfflineQueue() {
+        if (!supabaseClient || !navigator.onLine) return;
+        if (offlineQueue.length === 0) return;
+        
+        showNotification(`🔄 Синхронизация ${offlineQueue.length} записей...`, 'info');
+        let successCount = 0;
+        
+        for (let i = 0; i < offlineQueue.length; i++) {
+            const item = offlineQueue[i];
+            try {
+                if (item.type === 'operation') {
+                    await supabaseClient.from('operations').insert({ 
+                        id: item.data.id, 
+                        brigade: item.brigade, 
+                        operation_data: item.data 
+                    });
+                } else if (item.type === 'nsj') {
+                    await supabaseClient.from('nsj_records').insert({ 
+                        id: item.data.id, 
+                        brigade: item.brigade, 
+                        nsj_data: item.data 
+                    });
+                } else if (item.type === 'request') {
+                    await supabaseClient.from('requests').insert({ 
+                        id: item.data.id, 
+                        brigade: item.brigade, 
+                        request_data: item.data 
+                    });
+                } else if (item.type === 'summary') {
+                    await supabaseClient.from('summaries').insert({ 
+                        id: item.data.id, 
+                        brigade: item.brigade, 
+                        summary_data: item.data 
+                    });
+                }
+                successCount++;
+            } catch(e) {
+                console.log('Ошибка синхронизации:', e);
+            }
+        }
+        
+        if (successCount > 0) {
+            offlineQueue = offlineQueue.slice(successCount);
+            saveOfflineQueue();
+            showNotification(`✅ Синхронизировано ${successCount} записей`, 'success');
+            await refreshAllData();
+        }
+    }
+    
+    window.addEventListener('online', () => {
+        showNotification('🌐 Интернет появился, синхронизация...', 'info');
+        syncOfflineQueue();
+    });
+    
+    // ========== УМНОЕ ВРЕМЯ ==========
+    function smartDateTimeRange(startDt, endDt) {
+        if (!startDt) return '—';
+        const startDate = new Date(startDt);
+        const endDate = endDt ? new Date(endDt) : null;
+        
+        const formatTime = (d) => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        const formatFull = (d) => `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г ${formatTime(d)}`;
+        
+        if (!endDate) return formatFull(startDate);
+        
+        const isSameDay = startDate.toDateString() === endDate.toDateString();
+        if (isSameDay) {
+            return `${formatFull(startDate)} — ${formatTime(endDate)}`;
+        } else {
+            return `${formatFull(startDate)} — ${formatFull(endDate)}`;
+        }
+    }
+    
+    function formatDateTime(dt) { 
+        if (!dt) return '—'; 
+        const d = new Date(dt); 
+        return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; 
+    }
+    
+    function formatDate(dateString) { if (!dateString) return '—'; const d = new Date(dateString); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г`; }
+    function getFullWellName() { if (currentWellNumber && currentField) return `${currentWellNumber} (${currentField})`; if (currentWellNumber) return currentWellNumber; if (currentField) return currentField; return "не указано"; }
+    
     function showNotification(message, type = 'success') {
         const notification = document.createElement('div');
         notification.className = 'notification';
-        notification.style.background = type === 'success' ? '#27ae60' : '#e67e22';
+        notification.style.background = type === 'success' ? '#27ae60' : (type === 'warning' ? '#e67e22' : '#2c7cb6');
         notification.innerHTML = message;
         document.body.appendChild(notification);
         setTimeout(() => notification.remove(), 3000);
     }
+    
     function showSyncStatus(message, isError = false) {
         const syncDiv = document.getElementById('syncStatus');
         if (syncDiv) { syncDiv.textContent = message; syncDiv.style.background = isError ? '#c0392b' : '#0f2b3d';
         setTimeout(() => { if (syncDiv.textContent === message) { syncDiv.textContent = '✅ Готово'; syncDiv.style.background = '#0f2b3d'; } }, 2000); }
     }
-    function formatDate(dateString) { if (!dateString) return '—'; const d = new Date(dateString); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г`; }
-    function formatDateTime(dt) { if (!dt) return '—'; const d = new Date(dt); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
-    function getFullWellName() { if (currentWellNumber && currentField) return `${currentWellNumber} (${currentField})`; if (currentWellNumber) return currentWellNumber; if (currentField) return currentField; return "не указано"; }
     
     // Сохранение истории скважин при смене
     let wellHistory = {};
@@ -501,13 +591,16 @@
     async function initSupabase() {
         if (typeof supabase !== 'undefined') {
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            loadOfflineQueue();
             await loadBrigadeInfo();
             await refreshAllData();
             await loadAllBrigadesStatsAndRender();
+            await syncOfflineQueue();
             return true;
         }
         return false;
     }
+    
     async function quickLoad(table, filter) {
         if (!supabaseClient) return [];
         const cacheKey = `${table}_${currentBrigade}`;
@@ -519,6 +612,7 @@
             return cache[cacheKey].data;
         } catch (error) { return []; }
     }
+    
     async function saveBrigadeInfo() { 
         if (supabaseClient && isEditMode) {
             await supabaseClient.from('brigades').upsert({ 
@@ -530,6 +624,7 @@
             await saveWellHistory();
         }
     }
+    
     async function loadBrigadeInfo() { 
         if (!supabaseClient) return; 
         try { 
@@ -542,19 +637,84 @@
             } 
         } catch(e){} 
     }
+    
     async function loadOperations() { return await quickLoad('operations', 'operation_data'); }
-    async function addOperationToDB(op) { if (!supabaseClient || !isEditMode) return null; const newId = Date.now(); const newOp = { id: newId, ...op, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; await supabaseClient.from('operations').insert({ id: newId, brigade: currentBrigade, operation_data: newOp }); cache[`operations_${currentBrigade}`]=null; return newOp; }
+    async function addOperationToDB(op) { 
+        if (!supabaseClient || !isEditMode) return null; 
+        const newId = Date.now(); 
+        const newOp = { id: newId, ...op, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; 
+        if (!navigator.onLine) {
+            addToOfflineQueue('operation', newOp);
+            return newOp;
+        }
+        try {
+            await supabaseClient.from('operations').insert({ id: newId, brigade: currentBrigade, operation_data: newOp }); 
+            cache[`operations_${currentBrigade}`]=null; 
+            return newOp;
+        } catch(e) {
+            addToOfflineQueue('operation', newOp);
+            return newOp;
+        }
+    }
     async function deleteOperationFromDB(id) { if (!supabaseClient || !isEditMode) return false; await supabaseClient.from('operations').delete().eq('brigade', currentBrigade).eq('operation_data->>id', id.toString()); cache[`operations_${currentBrigade}`]=null; return true; }
     async function loadNsj() { return await quickLoad('nsj_records', 'nsj_data'); }
-    async function addNsjToDB(rec) { if (!supabaseClient || !isEditMode) return null; const newId = Date.now(); const newRec = { id: newId, ...rec, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; await supabaseClient.from('nsj_records').insert({ id: newId, brigade: currentBrigade, nsj_data: newRec }); cache[`nsj_${currentBrigade}`]=null; return newRec; }
+    async function addNsjToDB(rec) { 
+        if (!supabaseClient || !isEditMode) return null; 
+        const newId = Date.now(); 
+        const newRec = { id: newId, ...rec, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; 
+        if (!navigator.onLine) {
+            addToOfflineQueue('nsj', newRec);
+            return newRec;
+        }
+        try {
+            await supabaseClient.from('nsj_records').insert({ id: newId, brigade: currentBrigade, nsj_data: newRec }); 
+            cache[`nsj_${currentBrigade}`]=null; 
+            return newRec;
+        } catch(e) {
+            addToOfflineQueue('nsj', newRec);
+            return newRec;
+        }
+    }
     async function updateNsjStatus(id, completed) { if (!supabaseClient || !isEditMode) return false; const { data } = await supabaseClient.from('nsj_records').select('nsj_data').eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()).single(); await supabaseClient.from('nsj_records').update({ nsj_data: { ...data.nsj_data, completed } }).eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; return true; }
     async function updateNsjVolume(id, volume) { if (!supabaseClient || !isEditMode) return false; const { data } = await supabaseClient.from('nsj_records').select('nsj_data').eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()).single(); await supabaseClient.from('nsj_records').update({ nsj_data: { ...data.nsj_data, volume } }).eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; return true; }
     async function deleteNsjFromDB(id) { if (!supabaseClient || !isEditMode) return false; await supabaseClient.from('nsj_records').delete().eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; return true; }
     async function loadRequests() { return await quickLoad('requests', 'request_data'); }
-    async function addRequestToDB(req) { if (!supabaseClient || !isEditMode) return null; const newId = Date.now(); const newReq = { id: newId, ...req, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; await supabaseClient.from('requests').insert({ id: newId, brigade: currentBrigade, request_data: newReq }); cache[`requests_${currentBrigade}`]=null; return newReq; }
+    async function addRequestToDB(req) { 
+        if (!supabaseClient || !isEditMode) return null; 
+        const newId = Date.now(); 
+        const newReq = { id: newId, ...req, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; 
+        if (!navigator.onLine) {
+            addToOfflineQueue('request', newReq);
+            return newReq;
+        }
+        try {
+            await supabaseClient.from('requests').insert({ id: newId, brigade: currentBrigade, request_data: newReq }); 
+            cache[`requests_${currentBrigade}`]=null; 
+            return newReq;
+        } catch(e) {
+            addToOfflineQueue('request', newReq);
+            return newReq;
+        }
+    }
     async function deleteRequestFromDB(id) { if (!supabaseClient || !isEditMode) return false; await supabaseClient.from('requests').delete().eq('brigade', currentBrigade).eq('request_data->>id', id.toString()); cache[`requests_${currentBrigade}`]=null; return true; }
     async function loadSummary() { return await quickLoad('summaries', 'summary_data'); }
-    async function addSummaryToDB(sum) { if (!supabaseClient || !isEditMode) return null; const newId = Date.now(); const newSum = { id: newId, ...sum, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; await supabaseClient.from('summaries').insert({ id: newId, brigade: currentBrigade, summary_data: newSum }); cache[`summary_${currentBrigade}`]=null; return newSum; }
+    async function addSummaryToDB(sum) { 
+        if (!supabaseClient || !isEditMode) return null; 
+        const newId = Date.now(); 
+        const newSum = { id: newId, ...sum, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; 
+        if (!navigator.onLine) {
+            addToOfflineQueue('summary', newSum);
+            return newSum;
+        }
+        try {
+            await supabaseClient.from('summaries').insert({ id: newId, brigade: currentBrigade, summary_data: newSum }); 
+            cache[`summary_${currentBrigade}`]=null; 
+            return newSum;
+        } catch(e) {
+            addToOfflineQueue('summary', newSum);
+            return newSum;
+        }
+    }
     async function deleteSummaryFromDB(id) { if (!supabaseClient || !isEditMode) return false; await supabaseClient.from('summaries').delete().eq('brigade', currentBrigade).eq('summary_data->>id', id.toString()); cache[`summary_${currentBrigade}`]=null; return true; }
     
     async function loadBrigadeDetails(brigadeName) {
@@ -579,7 +739,7 @@
         if (!items.length) return '<div class="info-text">Нет данных</div>';
         if (type === 'ops') {
             return items.map(item => `<div class="detail-item">
-                📅 ${item.startDateTime ? formatDateTime(item.startDateTime) : '—'} — ${item.endDateTime ? formatDateTime(item.endDateTime) : '—'}<br>
+                📅 ${smartDateTimeRange(item.startDateTime, item.endDateTime)}<br>
                 🔧 ${item.name}<br>
                 Техника: ${item.tech || '—'}<br>
                 Представитель: ${item.representative || '—'}<br>
@@ -709,7 +869,17 @@
     function requestPassword() { const overlay = document.createElement('div'); overlay.className = 'password-overlay'; overlay.innerHTML = `<div class="password-modal"><h3>🔐 Пароль</h3><input type="password" id="passwordInput" placeholder="Пароль" style="width:100%; margin:16px 0; padding:12px;"><div class="flex-btns"><button class="btn" id="cancelPassword">Отмена</button><button class="btn btn-primary" id="submitPassword">Войти</button></div></div>`; document.body.appendChild(overlay); document.getElementById('submitPassword').addEventListener('click',()=>{ if(document.getElementById('passwordInput').value===EDIT_PASSWORD){ isEditMode=true; updateUIBasedOnMode(); showNotification('Режим редактирования активирован'); overlay.remove(); refreshAllData(); } else { showNotification('Неверный пароль','error'); overlay.remove(); } }); document.getElementById('cancelPassword').addEventListener('click',()=>overlay.remove()); }
     async function refreshAllData() { if(isLoading) return; isLoading=true; const [ops, nsj, reqs, sums] = await Promise.all([loadOperations(), loadNsj(), loadRequests(), loadSummary()]); renderOperations(ops); renderNsjHistory(nsj); renderRequests(reqs); renderSummary(sums); updateUIBasedOnMode(); isLoading=false; }
     
-    function renderOperations(ops) { const container = document.getElementById('operationsList'); if(!container) return; if(!ops?.length){ container.innerHTML='<div class="info-text">Нет операций</div>'; return; } let html=''; ops.forEach(op=>{ html+=`<div class="item-card"><div class="item-title"><span>🔧 ${op.name}</span>${isEditMode?`<button class="delete-item" data-op-id="${op.id}">🗑</button>`:''}</div><div>📅 ${op.startDateTime ? formatDateTime(op.startDateTime) : '—'} — ${op.endDateTime ? formatDateTime(op.endDateTime) : '—'}</div><div>Техника: ${op.tech||'—'}</div><div>👤 ${op.representative||'—'}</div><div>📦 ${op.materials||'—'}</div><div class="small-well">🛢️ ${op.well||getFullWellName()}</div></div>`; }); container.innerHTML=html; if(isEditMode) document.querySelectorAll('[data-op-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteOperationFromDB(btn.dataset.opId); refreshAllData();})); }
+    function renderOperations(ops) { 
+        const container = document.getElementById('operationsList'); 
+        if(!container) return; 
+        if(!ops?.length){ container.innerHTML='<div class="info-text">Нет операций</div>'; return; } 
+        let html=''; 
+        ops.forEach(op=>{ 
+            html+=`<div class="item-card"><div class="item-title"><span>🔧 ${op.name}</span>${isEditMode?`<button class="delete-item" data-op-id="${op.id}">🗑</button>`:''}</div><div>📅 ${smartDateTimeRange(op.startDateTime, op.endDateTime)}</div><div>Техника: ${op.tech||'—'}</div><div>👤 ${op.representative||'—'}</div><div>📦 ${op.materials||'—'}</div><div class="small-well">🛢️ ${op.well||getFullWellName()}</div></div>`; 
+        }); 
+        container.innerHTML=html; 
+        if(isEditMode) document.querySelectorAll('[data-op-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteOperationFromDB(btn.dataset.opId); refreshAllData();})); 
+    }
     
     function renderNsjHistory(nsjList) { 
         const container = document.getElementById('nsjHistoryList'); 
@@ -718,7 +888,6 @@
         let html = ''; 
         nsjList.forEach(item => { 
             const isCompleted = item.completed === true;
-            // (-) значит не выполнено, (+) значит выполнено
             const displayStatus = isCompleted ? '+' : '-';
             const statusClass = isCompleted ? 'sign-plus' : 'sign-minus';
             const statusText = isCompleted ? 'Выполнено (+)' : 'Ожидание (-)';
