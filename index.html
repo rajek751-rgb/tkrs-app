@@ -3,51 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>ТКРС - Сетевое планирование | РН-Сервис</title>
-    <meta name="theme-color" content="#0a1a2a">
+    <title>ТКРС - Сетевое планирование</title>
+    <meta name="theme-color" content="#0f2b3d">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        /* ========== ПРОМЫШЛЕННЫЙ ФОН ========== */
-        body {
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0a1a2a 0%, #1a2a3a 100%);
+        
+        /* --- НОВЫЙ ГЛОБАЛЬНЫЙ ФОН С ЛОГОТИПАМИ РН-СЕРВИС --- */
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
             position: relative;
-            padding: 20px;
+            padding: 20px; 
         }
         
-        /* Промышленное изображение (нефтяная вышка) — замените URL на ваше фото */
+        /* Слой с логотипом (водяной знак) */
         body::before {
-            content: "";
+            content: "РН-СЕРВИС";
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: url('https://images.pexels.com/photos/8355926/pexels-photo-8355926.jpeg?auto=compress&cs=tinysrgb&w=1600');
-            background-size: cover;
-            background-position: center 30%;
-            background-repeat: no-repeat;
-            opacity: 0.35;
-            z-index: 0;
+            font-size: clamp(40px, 15vw, 180px);
+            font-weight: 900;
+            color: rgba(15, 43, 61, 0.03);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             pointer-events: none;
+            z-index: 0;
+            white-space: pre-wrap;
+            text-align: center;
+            line-height: 1.2;
+            letter-spacing: 10px;
         }
         
-        /* Лёгкая текстура поверх фона */
+        /* Дополнительный слой с повторяющимся текстом */
         body::after {
-            content: "";
+            content: "🛢️ РН-СЕРВИС 🛢️";
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: radial-gradient(circle at 25% 40%, rgba(255,255,240,0.03) 2%, transparent 2.5%);
-            background-size: 55px 55px;
+            font-size: 24px;
+            font-weight: 800;
+            color: rgba(15, 43, 61, 0.02);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            align-items: center;
+            justify-content: space-around;
             pointer-events: none;
             z-index: 0;
         }
-
+        
         .app-container { 
             max-width: 800px; 
             margin: 0 auto; 
@@ -55,100 +65,79 @@
             z-index: 2;
         }
         
-        /* ========== GLASS-ЭФФЕКТ ДЛЯ КАРТОЧЕК ========== */
-        .card { 
-            background: rgba(20, 30, 45, 0.55);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 32px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.15);
-            margin-bottom: 20px;
-            overflow: hidden;
-            transition: all 0.2s ease;
-        }
-        .card:hover { 
-            transform: translateY(-2px);
-            background: rgba(25, 35, 50, 0.65);
-            border-color: rgba(255,255,200,0.25);
-        }
+        .card { background: rgba(255, 255, 255, 0.98); border-radius: 28px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); margin-bottom: 20px; overflow: hidden; backdrop-filter: blur(0px); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); }
         
-        .card-header { 
-            padding: 18px 24px; 
-            background: rgba(10, 25, 40, 0.7);
-            color: white; 
-            font-weight: 600; 
-            font-size: 18px; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            cursor: pointer; 
-            user-select: none;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
+        .card-header { padding: 18px 24px; background: #0f2b3d; color: white; font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
         .card-header span { font-size: 24px; }
         .card-header .collapse-icon { margin-left: auto; font-size: 20px; transition: transform 0.2s; }
         .card-header.collapsed .collapse-icon { transform: rotate(-90deg); }
-        .card-content { padding: 20px 24px; transition: all 0.2s; color: #f0f4fa; }
+        .card-content { padding: 20px 24px; transition: all 0.2s; }
         .card-content.collapsed { display: none; }
         
-        /* Таблицы и элементы интерфейса — светлая тема для читаемости */
-        .compact-brigade-table { width: 100%; border-collapse: collapse; font-size: 13px; color: #eef2ff; }
-        .compact-brigade-table th, .compact-brigade-table td { padding: 10px 8px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.2); }
-        .compact-brigade-table th { background: rgba(0,0,0,0.3); font-weight: 700; color: #ffd966; font-size: 12px; }
+        .compact-brigade-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .compact-brigade-table th, .compact-brigade-table td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .compact-brigade-table th { background: #f1f5f9; font-weight: 700; color: #1e3a4d; font-size: 12px; }
         .brigade-row { cursor: pointer; transition: background 0.1s; }
-        .brigade-row:hover { background: rgba(255,255,200,0.1); }
+        .brigade-row:hover { background: #f0f4f8; }
         
-        .tabs { display: flex; background: rgba(0,0,0,0.3); backdrop-filter: blur(8px); border-radius: 60px; margin-bottom: 24px; overflow-x: auto; }
-        .tab-btn { flex: 1; padding: 14px 8px; background: transparent; border: none; font-size: 15px; font-weight: 600; color: #ccddee; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: 0.1s; }
-        .tab-btn.active { color: white; border-bottom-color: #ffaa33; background: rgba(255,170,51,0.15); border-radius: 60px; }
-        
+        .tabs { display: flex; background: white; border-radius: 60px; margin-bottom: 24px; overflow-x: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .tab-btn { flex: 1; padding: 14px 8px; background: transparent; border: none; font-size: 15px; font-weight: 600; color: #6c7a89; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .tab-btn.active { color: #0f2b3d; border-bottom-color: #0f2b3d; background: #f5f9ff; }
         .form-row { margin-bottom: 18px; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: #ffdd99; font-size: 14px; letter-spacing: 0.3px; }
-        input, select, textarea { width: 100%; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; font-size: 15px; background: rgba(0,0,0,0.5); color: white; backdrop-filter: blur(4px); }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: #ffaa33; background: rgba(0,0,0,0.7); }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #1e3a4d; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px 14px; border: 1.5px solid #dce4ec; border-radius: 16px; font-size: 15px; background: white; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #2c7cb6; }
         
-        .btn { padding: 12px 20px; border-radius: 40px; border: none; font-weight: 600; cursor: pointer; background: rgba(30,40,55,0.9); color: white; backdrop-filter: blur(4px); transition: 0.1s; }
-        .btn-primary { background: #1e5a7d; color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
-        .btn-warning { background: #c96f0e; color: white; }
+        .compact-datetime { width: auto; min-width: 180px; display: inline-block; }
+        .datetime-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+        
+        .btn { padding: 12px 20px; border-radius: 40px; border: none; font-weight: 600; cursor: pointer; background: #eef2f7; transition: 0.1s; }
+        .btn-primary { background: #0f2b3d; color: white; }
+        .btn-warning { background: #e67e22; color: white; }
         .btn-file { background: #2c7cb6; color: white; display: inline-flex; align-items: center; gap: 8px; }
         .flex-btns { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
-        
-        .items-list { margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 16px; max-height: 400px; overflow-y: auto; }
-        .item-card { background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); border-radius: 20px; padding: 14px; margin-bottom: 12px; border-left: 4px solid #ffaa33; cursor: pointer; transition: all 0.2s; color: #f0f4fa; }
-        .item-card:hover { transform: translateX(5px); background: rgba(0,0,0,0.6); }
+        .items-list { margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px; max-height: 400px; overflow-y: auto; }
+        .item-card { background: #f8fafc; border-radius: 20px; padding: 14px; margin-bottom: 12px; border-left: 4px solid #2c7cb6; cursor: pointer; transition: all 0.2s; }
+        .item-card:hover { transform: translateX(5px); background: #f0f4f8; }
         .item-title { font-weight: 700; display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .delete-item { background: none; border: none; color: #ff8866; font-size: 18px; cursor: pointer; padding: 0 8px; }
-        .edit-item { background: none; border: none; color: #88aaff; font-size: 16px; cursor: pointer; padding: 0 8px; }
-        
-        .summary-block { background: rgba(0,0,0,0.3); border-radius: 20px; padding: 16px; margin-top: 16px; }
-        .info-text { font-size: 13px; color: #bbccdd; margin-top: 6px; }
-        .well-info-badge { background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); padding: 12px 16px; border-radius: 20px; margin-bottom: 16px; border-left: 4px solid #ffaa33; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; color: #f0f4fa; }
-        .action-hint { font-size: 12px; color: #ffaa66; }
-        
-        .nsj-entry { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.15); flex-wrap: wrap; gap: 8px; }
+        .delete-item { background: none; border: none; color: #c0392b; font-size: 18px; cursor: pointer; padding: 0 8px; }
+        .edit-item { background: none; border: none; color: #2c7cb6; font-size: 16px; cursor: pointer; padding: 0 8px; }
+        .summary-block { background: #eef2fa; border-radius: 20px; padding: 16px; margin-top: 16px; }
+        .info-text { font-size: 13px; color: #5a6e7c; margin-top: 6px; }
+        .password-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .password-modal { background: white; border-radius: 32px; padding: 28px; max-width: 350px; width: 90%; text-align: center; }
+        .edit-mode-badge { background: #e67e22; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
+        .readonly-badge { background: #27ae60; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; display: inline-block; cursor: pointer; }
+        .well-info-badge { background: #eef2fa; padding: 12px 16px; border-radius: 20px; margin-bottom: 16px; border-left: 4px solid #2c7cb6; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .action-hint { font-size: 12px; color: #e67e22; }
+        .nsj-entry { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; gap: 8px; }
         .sign-btn { background: none; border: none; width: 32px; height: 32px; border-radius: 16px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        .sign-minus { background: #1e7e3420; color: #8feb9f; border: 1px solid #6fdf7a; }
-        .sign-plus { background: #c0392b20; color: #ffaa88; border: 1px solid #ffaa88; }
+        .sign-minus { background: #1e7e3420; color: #1e7e34; border: 1px solid #1e7e34; }
+        .sign-plus { background: #c0392b20; color: #c0392b; border: 1px solid #c0392b; }
         .row-2cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        
-        .sync-status { position: fixed; bottom: 20px; right: 20px; background: #0a2a3a; color: white; padding: 8px 16px; border-radius: 28px; font-size: 12px; z-index: 1000; font-weight: 500; cursor: pointer; border: 1px solid #ffaa66; }
-        .request-hint { background: rgba(0,0,0,0.6); border-left: 3px solid #e67e22; padding: 12px; border-radius: 12px; margin-top: 12px; font-size: 13px; color: #ffefcc; }
-        
-        .brigade-detail-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-        .brigade-detail-content { background: rgba(15,25,40,0.95); backdrop-filter: blur(16px); border-radius: 32px; max-width: 550px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 24px; border: 1px solid rgba(255,255,200,0.2); color: #eef2ff; }
-        .close-modal { float: right; font-size: 28px; cursor: pointer; color: #ffaa77; }
-        .detail-tab { padding: 8px 16px; cursor: pointer; border-radius: 20px 20px 0 0; font-size: 14px; background: rgba(0,0,0,0.5); color: #ccddff; }
-        .detail-tab.active { background: #1e5a7d; color: white; }
-        
+        .sync-status { position: fixed; bottom: 20px; right: 20px; background: #0f2b3d; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; z-index: 1000; font-weight: 500; cursor: pointer; }
+        .request-hint { background: #fff8e7; border-left: 3px solid #e67e22; padding: 12px; border-radius: 12px; margin-top: 12px; font-size: 13px; }
+        hr { margin: 16px 0; border: none; border-top: 1px solid #e2e8f0; }
+        .brigade-detail-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .brigade-detail-content { background: white; border-radius: 32px; max-width: 550px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 24px; }
+        .close-modal { float: right; font-size: 28px; cursor: pointer; color: #999; }
+        .brigade-detail-tabs { display: flex; gap: 10px; margin: 20px 0; border-bottom: 1px solid #ddd; flex-wrap: wrap; }
+        .detail-tab { padding: 8px 16px; cursor: pointer; border-radius: 20px 20px 0 0; font-size: 14px; background: #f1f5f9; }
+        .detail-tab.active { background: #0f2b3d; color: white; }
+        .detail-list { max-height: 450px; overflow-y: auto; }
+        .detail-item { padding: 12px; border-bottom: 1px solid #eee; margin-bottom: 8px; background: #f8fafc; border-radius: 12px; font-size: 13px; }
+        .detail-well { font-size: 10px; color: #888; margin-top: 4px; }
         .notification { position: fixed; top: 20px; right: 20px; background: #27ae60; color: white; padding: 12px 20px; border-radius: 12px; z-index: 3000; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .small-well, .detail-well { font-size: 10px; color: #bbccdd; margin-top: 4px; }
+        .small-well { font-size: 10px; color: #888; margin-top: 4px; }
+        .well-ref { font-size: 9px; color: #6c7a89; margin-left: 8px; }
         
         @media (max-width: 600px) { 
             .row-2cols { grid-template-columns: 1fr; } 
             .card-content { padding: 16px; } 
-            .compact-brigade-table { font-size: 11px; }
+            .compact-brigade-table { font-size: 11px; } 
+            .compact-datetime { min-width: 140px; }
         }
     </style>
 </head>
@@ -296,7 +285,7 @@
             </div>
         </div>
 
-        <!-- НСЖ -->
+        <!-- НСЖ (нефть, жидкость, АСПО, вывоз) -->
         <div id="tab-nsj" class="tab-content" style="display:none;">
             <div class="card">
                 <div class="card-header"><span>💧</span> НСЖ (нефть, жидкость, АСПО, вывоз)</div>
@@ -385,7 +374,7 @@
             </div>
         </div>
 
-        <!-- Сводка -->
+        <!-- Сводка с кнопкой для файла -->
         <div id="tab-summary" class="tab-content" style="display:none;">
             <div class="card">
                 <div class="card-header"><span>📊</span> Сводка выполненных работ</div>
@@ -478,143 +467,47 @@
     let isEditMode = false;
     let supabaseClient = null;
     
-    // ========== ОФЛАЙН-СИНХРОНИЗАЦИЯ ==========
-    let offlineQueue = []; // очередь операций для синхронизации
-    
-    // Загрузка очереди из localStorage
-    function loadOfflineQueue() {
-        const saved = localStorage.getItem('offlineQueue_tkrs');
-        if (saved) offlineQueue = JSON.parse(saved);
-    }
-    function saveOfflineQueue() {
-        localStorage.setItem('offlineQueue_tkrs', JSON.stringify(offlineQueue));
-    }
-    
-    // Добавление операции в очередь офлайн
-    function addToOfflineQueue(operationType, data) {
-        offlineQueue.push({
-            type: operationType,
-            data: data,
-            timestamp: Date.now(),
-            brigade: currentBrigade
-        });
-        saveOfflineQueue();
-        showNotification('📡 Нет интернета. Данные сохранены локально и отправятся позже.', 'warning');
-    }
-    
-    // Синхронизация с сервером
-    async function syncOfflineQueue() {
-        if (!supabaseClient || !navigator.onLine) return;
-        if (offlineQueue.length === 0) return;
-        
-        showNotification(`🔄 Синхронизация ${offlineQueue.length} записей...`, 'info');
-        let successCount = 0;
-        
-        for (let i = 0; i < offlineQueue.length; i++) {
-            const item = offlineQueue[i];
-            try {
-                if (item.type === 'operation') {
-                    await supabaseClient.from('operations').insert({ 
-                        id: item.data.id, 
-                        brigade: item.brigade, 
-                        operation_data: item.data 
-                    });
-                } else if (item.type === 'nsj') {
-                    await supabaseClient.from('nsj_records').insert({ 
-                        id: item.data.id, 
-                        brigade: item.brigade, 
-                        nsj_data: item.data 
-                    });
-                } else if (item.type === 'request') {
-                    await supabaseClient.from('requests').insert({ 
-                        id: item.data.id, 
-                        brigade: item.brigade, 
-                        request_data: item.data 
-                    });
-                } else if (item.type === 'summary') {
-                    await supabaseClient.from('summaries').insert({ 
-                        id: item.data.id, 
-                        brigade: item.brigade, 
-                        summary_data: item.data 
-                    });
-                }
-                successCount++;
-            } catch(e) {
-                console.log('Ошибка синхронизации:', e);
-            }
-        }
-        
-        if (successCount > 0) {
-            offlineQueue = offlineQueue.slice(successCount);
-            saveOfflineQueue();
-            showNotification(`✅ Синхронизировано ${successCount} записей`, 'success');
-            await refreshAllData();
-        }
-    }
-    
-    // Умное форматирование времени (если дата одинаковая → только часы)
-    function smartDateTimeRange(startDt, endDt) {
-        if (!startDt) return '—';
-        const startDate = new Date(startDt);
-        const endDate = endDt ? new Date(endDt) : null;
-        
-        const formatTime = (d) => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-        const formatFull = (d) => `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г ${formatTime(d)}`;
-        
-        if (!endDate) return formatFull(startDate);
-        
-        const isSameDay = startDate.toDateString() === endDate.toDateString();
-        if (isSameDay) {
-            return `${formatFull(startDate)} — ${formatTime(endDate)}`;
-        } else {
-            return `${formatFull(startDate)} — ${formatFull(endDate)}`;
-        }
-    }
-    
-    function formatDateTime(dt) { 
-        if (!dt) return '—'; 
-        const d = new Date(dt); 
-        return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; 
-    }
-    
-    function formatDate(dateString) { if (!dateString) return '—'; const d = new Date(dateString); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г`; }
-    
-    function getFullWellName() { if (currentWellNumber && currentField) return `${currentWellNumber} (${currentField})`; if (currentWellNumber) return currentWellNumber; if (currentField) return currentField; return "не указано"; }
-    
     function showNotification(message, type = 'success') {
         const notification = document.createElement('div');
         notification.className = 'notification';
-        notification.style.background = type === 'success' ? '#27ae60' : (type === 'warning' ? '#e67e22' : '#2c7cb6');
+        notification.style.background = type === 'success' ? '#27ae60' : '#e67e22';
         notification.innerHTML = message;
         document.body.appendChild(notification);
         setTimeout(() => notification.remove(), 3000);
     }
-    
     function showSyncStatus(message, isError = false) {
         const syncDiv = document.getElementById('syncStatus');
-        if (syncDiv) { syncDiv.textContent = message; syncDiv.style.background = isError ? '#c0392b' : '#0a2a3a';
-        setTimeout(() => { if (syncDiv.textContent === message) { syncDiv.textContent = '✅ Готово'; syncDiv.style.background = '#0a2a3a'; } }, 2000); }
+        if (syncDiv) { syncDiv.textContent = message; syncDiv.style.background = isError ? '#c0392b' : '#0f2b3d';
+        setTimeout(() => { if (syncDiv.textContent === message) { syncDiv.textContent = '✅ Готово'; syncDiv.style.background = '#0f2b3d'; } }, 2000); }
     }
+    function formatDate(dateString) { if (!dateString) return '—'; const d = new Date(dateString); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г`; }
+    function formatDateTime(dt) { if (!dt) return '—'; const d = new Date(dt); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+    function getFullWellName() { if (currentWellNumber && currentField) return `${currentWellNumber} (${currentField})`; if (currentWellNumber) return currentWellNumber; if (currentField) return currentField; return "не указано"; }
     
-    // Мониторинг интернета
-    window.addEventListener('online', () => {
-        showNotification('🌐 Интернет появился, синхронизация...', 'info');
-        syncOfflineQueue();
-    });
+    // Сохранение истории скважин при смене
+    let wellHistory = {};
+    async function saveWellHistory() {
+        if (!supabaseClient) return;
+        try {
+            await supabaseClient.from('brigade_well_history').upsert({
+                brigade: currentBrigade,
+                well_number: currentWellNumber,
+                field_name: currentField,
+                updated_at: new Date().toISOString()
+            });
+        } catch(e) { console.log('История сохраняется'); }
+    }
     
     async function initSupabase() {
         if (typeof supabase !== 'undefined') {
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            loadOfflineQueue();
             await loadBrigadeInfo();
             await refreshAllData();
             await loadAllBrigadesStatsAndRender();
-            await syncOfflineQueue();
             return true;
         }
         return false;
     }
-    
     async function quickLoad(table, filter) {
         if (!supabaseClient) return [];
         const cacheKey = `${table}_${currentBrigade}`;
@@ -626,20 +519,17 @@
             return cache[cacheKey].data;
         } catch (error) { return []; }
     }
-    
     async function saveBrigadeInfo() { 
         if (supabaseClient && isEditMode) {
-            try {
-                await supabaseClient.from('brigades').upsert({ 
-                    brigade_name: currentBrigade, 
-                    well_number: currentWellNumber, 
-                    field_name: currentField, 
-                    last_active: new Date().toISOString() 
-                });
-            } catch(e) { console.log('Ошибка сохранения бригады'); }
+            await supabaseClient.from('brigades').upsert({ 
+                brigade_name: currentBrigade, 
+                well_number: currentWellNumber, 
+                field_name: currentField, 
+                last_active: new Date().toISOString() 
+            });
+            await saveWellHistory();
         }
     }
-    
     async function loadBrigadeInfo() { 
         if (!supabaseClient) return; 
         try { 
@@ -652,84 +542,19 @@
             } 
         } catch(e){} 
     }
-    
     async function loadOperations() { return await quickLoad('operations', 'operation_data'); }
-    async function addOperationToDB(op) { 
-        if (!supabaseClient || !isEditMode) return null; 
-        const newId = Date.now(); 
-        const newOp = { id: newId, ...op, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; 
-        if (!navigator.onLine) {
-            addToOfflineQueue('operation', newOp);
-            return newOp;
-        }
-        try {
-            await supabaseClient.from('operations').insert({ id: newId, brigade: currentBrigade, operation_data: newOp }); 
-            cache[`operations_${currentBrigade}`]=null; 
-            return newOp;
-        } catch(e) {
-            addToOfflineQueue('operation', newOp);
-            return newOp;
-        }
-    }
+    async function addOperationToDB(op) { if (!supabaseClient || !isEditMode) return null; const newId = Date.now(); const newOp = { id: newId, ...op, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; await supabaseClient.from('operations').insert({ id: newId, brigade: currentBrigade, operation_data: newOp }); cache[`operations_${currentBrigade}`]=null; return newOp; }
     async function deleteOperationFromDB(id) { if (!supabaseClient || !isEditMode) return false; await supabaseClient.from('operations').delete().eq('brigade', currentBrigade).eq('operation_data->>id', id.toString()); cache[`operations_${currentBrigade}`]=null; return true; }
     async function loadNsj() { return await quickLoad('nsj_records', 'nsj_data'); }
-    async function addNsjToDB(rec) { 
-        if (!supabaseClient || !isEditMode) return null; 
-        const newId = Date.now(); 
-        const newRec = { id: newId, ...rec, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; 
-        if (!navigator.onLine) {
-            addToOfflineQueue('nsj', newRec);
-            return newRec;
-        }
-        try {
-            await supabaseClient.from('nsj_records').insert({ id: newId, brigade: currentBrigade, nsj_data: newRec }); 
-            cache[`nsj_${currentBrigade}`]=null; 
-            return newRec;
-        } catch(e) {
-            addToOfflineQueue('nsj', newRec);
-            return newRec;
-        }
-    }
+    async function addNsjToDB(rec) { if (!supabaseClient || !isEditMode) return null; const newId = Date.now(); const newRec = { id: newId, ...rec, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; await supabaseClient.from('nsj_records').insert({ id: newId, brigade: currentBrigade, nsj_data: newRec }); cache[`nsj_${currentBrigade}`]=null; return newRec; }
     async function updateNsjStatus(id, completed) { if (!supabaseClient || !isEditMode) return false; const { data } = await supabaseClient.from('nsj_records').select('nsj_data').eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()).single(); await supabaseClient.from('nsj_records').update({ nsj_data: { ...data.nsj_data, completed } }).eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; return true; }
     async function updateNsjVolume(id, volume) { if (!supabaseClient || !isEditMode) return false; const { data } = await supabaseClient.from('nsj_records').select('nsj_data').eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()).single(); await supabaseClient.from('nsj_records').update({ nsj_data: { ...data.nsj_data, volume } }).eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; return true; }
     async function deleteNsjFromDB(id) { if (!supabaseClient || !isEditMode) return false; await supabaseClient.from('nsj_records').delete().eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; return true; }
     async function loadRequests() { return await quickLoad('requests', 'request_data'); }
-    async function addRequestToDB(req) { 
-        if (!supabaseClient || !isEditMode) return null; 
-        const newId = Date.now(); 
-        const newReq = { id: newId, ...req, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; 
-        if (!navigator.onLine) {
-            addToOfflineQueue('request', newReq);
-            return newReq;
-        }
-        try {
-            await supabaseClient.from('requests').insert({ id: newId, brigade: currentBrigade, request_data: newReq }); 
-            cache[`requests_${currentBrigade}`]=null; 
-            return newReq;
-        } catch(e) {
-            addToOfflineQueue('request', newReq);
-            return newReq;
-        }
-    }
+    async function addRequestToDB(req) { if (!supabaseClient || !isEditMode) return null; const newId = Date.now(); const newReq = { id: newId, ...req, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; await supabaseClient.from('requests').insert({ id: newId, brigade: currentBrigade, request_data: newReq }); cache[`requests_${currentBrigade}`]=null; return newReq; }
     async function deleteRequestFromDB(id) { if (!supabaseClient || !isEditMode) return false; await supabaseClient.from('requests').delete().eq('brigade', currentBrigade).eq('request_data->>id', id.toString()); cache[`requests_${currentBrigade}`]=null; return true; }
     async function loadSummary() { return await quickLoad('summaries', 'summary_data'); }
-    async function addSummaryToDB(sum) { 
-        if (!supabaseClient || !isEditMode) return null; 
-        const newId = Date.now(); 
-        const newSum = { id: newId, ...sum, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; 
-        if (!navigator.onLine) {
-            addToOfflineQueue('summary', newSum);
-            return newSum;
-        }
-        try {
-            await supabaseClient.from('summaries').insert({ id: newId, brigade: currentBrigade, summary_data: newSum }); 
-            cache[`summary_${currentBrigade}`]=null; 
-            return newSum;
-        } catch(e) {
-            addToOfflineQueue('summary', newSum);
-            return newSum;
-        }
-    }
+    async function addSummaryToDB(sum) { if (!supabaseClient || !isEditMode) return null; const newId = Date.now(); const newSum = { id: newId, ...sum, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField }; await supabaseClient.from('summaries').insert({ id: newId, brigade: currentBrigade, summary_data: newSum }); cache[`summary_${currentBrigade}`]=null; return newSum; }
     async function deleteSummaryFromDB(id) { if (!supabaseClient || !isEditMode) return false; await supabaseClient.from('summaries').delete().eq('brigade', currentBrigade).eq('summary_data->>id', id.toString()); cache[`summary_${currentBrigade}`]=null; return true; }
     
     async function loadBrigadeDetails(brigadeName) {
@@ -754,7 +579,7 @@
         if (!items.length) return '<div class="info-text">Нет данных</div>';
         if (type === 'ops') {
             return items.map(item => `<div class="detail-item">
-                📅 ${item.startDateTime ? smartDateTimeRange(item.startDateTime, item.endDateTime) : '—'}<br>
+                📅 ${item.startDateTime ? formatDateTime(item.startDateTime) : '—'} — ${item.endDateTime ? formatDateTime(item.endDateTime) : '—'}<br>
                 🔧 ${item.name}<br>
                 Техника: ${item.tech || '—'}<br>
                 Представитель: ${item.representative || '—'}<br>
@@ -780,7 +605,7 @@
             return items.map(item => `<div class="detail-item">
                 📊 ${item.volume?.substring(0, 50) || 'Работа'}<br>
                 📅 ${formatDateTime(item.start_datetime)} — ${formatDateTime(item.end_datetime)}<br>
-                ${item.file ? `<a href="${item.file}" target="_blank" style="color:#88aaff;">📎 Ссылка на файл</a>` : '📎 —'}<br>
+                ${item.file ? `<a href="${item.file}" target="_blank" style="color:#2c7cb6;">📎 Ссылка на файл</a>` : '📎 —'}<br>
                 <div class="detail-well">🛢️ ${item.well || '—'}</div>
             </div>`).join('');
         }
@@ -794,8 +619,8 @@
             <div class="brigade-detail-content">
                 <span class="close-modal">&times;</span>
                 <h2>🏭 ${brigadeName}</h2>
-                <p style="font-size: 13px; color: #bbccdd;">🛢️ ${brigadeWell}</p>
-                <div style="display: flex; gap: 10px; margin: 20px 0; border-bottom: 1px solid rgba(255,255,200,0.2); flex-wrap: wrap;">
+                <p style="font-size: 13px; color: #666;">🛢️ ${brigadeWell}</p>
+                <div class="brigade-detail-tabs">
                     <div class="detail-tab active" data-detail-tab="ops">📊 План (${details.operations.length})</div>
                     <div class="detail-tab" data-detail-tab="nsj">💧 НСЖ (${details.nsj.length})</div>
                     <div class="detail-tab" data-detail-tab="req">📋 Заявки (${details.requests.length})</div>
@@ -884,17 +709,7 @@
     function requestPassword() { const overlay = document.createElement('div'); overlay.className = 'password-overlay'; overlay.innerHTML = `<div class="password-modal"><h3>🔐 Пароль</h3><input type="password" id="passwordInput" placeholder="Пароль" style="width:100%; margin:16px 0; padding:12px;"><div class="flex-btns"><button class="btn" id="cancelPassword">Отмена</button><button class="btn btn-primary" id="submitPassword">Войти</button></div></div>`; document.body.appendChild(overlay); document.getElementById('submitPassword').addEventListener('click',()=>{ if(document.getElementById('passwordInput').value===EDIT_PASSWORD){ isEditMode=true; updateUIBasedOnMode(); showNotification('Режим редактирования активирован'); overlay.remove(); refreshAllData(); } else { showNotification('Неверный пароль','error'); overlay.remove(); } }); document.getElementById('cancelPassword').addEventListener('click',()=>overlay.remove()); }
     async function refreshAllData() { if(isLoading) return; isLoading=true; const [ops, nsj, reqs, sums] = await Promise.all([loadOperations(), loadNsj(), loadRequests(), loadSummary()]); renderOperations(ops); renderNsjHistory(nsj); renderRequests(reqs); renderSummary(sums); updateUIBasedOnMode(); isLoading=false; }
     
-    function renderOperations(ops) { 
-        const container = document.getElementById('operationsList'); 
-        if(!container) return; 
-        if(!ops?.length){ container.innerHTML='<div class="info-text">Нет операций</div>'; return; } 
-        let html=''; 
-        ops.forEach(op=>{ 
-            html+=`<div class="item-card"><div class="item-title"><span>🔧 ${op.name}</span>${isEditMode?`<button class="delete-item" data-op-id="${op.id}">🗑</button>`:''}</div><div>📅 ${smartDateTimeRange(op.startDateTime, op.endDateTime)}</div><div>Техника: ${op.tech||'—'}</div><div>👤 ${op.representative||'—'}</div><div>📦 ${op.materials||'—'}</div><div class="small-well">🛢️ ${op.well||getFullWellName()}</div></div>`; 
-        }); 
-        container.innerHTML=html; 
-        if(isEditMode) document.querySelectorAll('[data-op-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteOperationFromDB(btn.dataset.opId); refreshAllData();})); 
-    }
+    function renderOperations(ops) { const container = document.getElementById('operationsList'); if(!container) return; if(!ops?.length){ container.innerHTML='<div class="info-text">Нет операций</div>'; return; } let html=''; ops.forEach(op=>{ html+=`<div class="item-card"><div class="item-title"><span>🔧 ${op.name}</span>${isEditMode?`<button class="delete-item" data-op-id="${op.id}">🗑</button>`:''}</div><div>📅 ${op.startDateTime ? formatDateTime(op.startDateTime) : '—'} — ${op.endDateTime ? formatDateTime(op.endDateTime) : '—'}</div><div>Техника: ${op.tech||'—'}</div><div>👤 ${op.representative||'—'}</div><div>📦 ${op.materials||'—'}</div><div class="small-well">🛢️ ${op.well||getFullWellName()}</div></div>`; }); container.innerHTML=html; if(isEditMode) document.querySelectorAll('[data-op-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteOperationFromDB(btn.dataset.opId); refreshAllData();})); }
     
     function renderNsjHistory(nsjList) { 
         const container = document.getElementById('nsjHistoryList'); 
@@ -903,6 +718,7 @@
         let html = ''; 
         nsjList.forEach(item => { 
             const isCompleted = item.completed === true;
+            // (-) значит не выполнено, (+) значит выполнено
             const displayStatus = isCompleted ? '+' : '-';
             const statusClass = isCompleted ? 'sign-plus' : 'sign-minus';
             const statusText = isCompleted ? 'Выполнено (+)' : 'Ожидание (-)';
@@ -913,7 +729,7 @@
                     <span class="well-ref">🛢️ ${item.wellNumber || ''} ${item.field || ''}</span>
                 </div>
                 <div><strong>${item.type || 'Нефть'}</strong>: ${item.volume} м³</div>
-                <div style="font-size: 11px; color: #bbccdd;">${statusText}</div>
+                <div style="font-size: 11px; color: #666;">${statusText}</div>
                 ${isEditMode ? `<div><button class="edit-item" data-nsj-edit="${item.id}" data-nsj-volume="${item.volume}">✏️</button><button class="delete-item" data-nsj-del="${item.id}">🗑</button></div>` : ''}
             </div>`; 
         }); 
@@ -933,7 +749,7 @@
         if(!summary?.length){ container.innerHTML='<div class="info-text">Нет записей</div>'; return; } 
         let html=''; 
         summary.forEach(rec=>{ 
-            html+=`<div class="item-card"><div class="item-title"><span>📊 ${rec.volume?.substring(0,40)||'Работа'}</span>${isEditMode?`<button class="delete-item" data-summary-id="${rec.id}">🗑</button>`:''}</div><div>📅 ${formatDateTime(rec.start_datetime)} — ${formatDateTime(rec.end_datetime)}</div><div>${rec.file ? `<a href="${rec.file}" target="_blank" style="color:#88aaff;">📎 Открыть файл</a>` : '📎 —'}</div><div class="small-well">🛢️ ${rec.well||getFullWellName()}</div></div>`; 
+            html+=`<div class="item-card"><div class="item-title"><span>📊 ${rec.volume?.substring(0,40)||'Работа'}</span>${isEditMode?`<button class="delete-item" data-summary-id="${rec.id}">🗑</button>`:''}</div><div>📅 ${formatDateTime(rec.start_datetime)} — ${formatDateTime(rec.end_datetime)}</div><div>${rec.file ? `<a href="${rec.file}" target="_blank" style="color:#2c7cb6;">📎 Открыть файл</a>` : '📎 —'}</div><div class="small-well">🛢️ ${rec.well||getFullWellName()}</div></div>`; 
         }); 
         container.innerHTML=html; 
         if(isEditMode) document.querySelectorAll('[data-summary-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteSummaryFromDB(btn.dataset.summaryId); refreshAllData();})); 
@@ -941,6 +757,7 @@
     
     function initTabs() { const btns = document.querySelectorAll('.tab-btn'); const tabs = ['graph','nsj','requests','summary']; btns.forEach((btn,idx)=>{ btn.addEventListener('click',()=>{ btns.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); tabs.forEach(tab=>{ document.getElementById(`tab-${tab}`).style.display='none'; }); document.getElementById(`tab-${tabs[idx]}`).style.display='block'; if(tabs[idx]==='requests') updateRequestHintFromRules(); }); }); }
     
+    // Файловая галерея
     let uploadedFiles = [];
     const fileInput = document.getElementById('fileInput');
     const fileUploadBtn = document.getElementById('fileUploadBtn');
@@ -968,11 +785,12 @@
         fileGallery.innerHTML = '';
         uploadedFiles.forEach((f, idx) => {
             const isImage = f.type.startsWith('image/');
-            const preview = isImage ? `<img src="${f.url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">` : `<div style="width: 60px; height: 60px; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; border-radius: 8px;">📄</div>`;
+            const preview = isImage ? `<img src="${f.url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">` : `<div style="width: 60px; height: 60px; background: #eef2fa; display: flex; align-items: center; justify-content: center; border-radius: 8px;">📄</div>`;
             fileGallery.innerHTML += `<div style="cursor: pointer; text-align: center;" onclick="window.open('${f.url}', '_blank')">${preview}<div style="font-size: 10px;">${f.name.substring(0,10)}</div></div>`;
         });
     }
     
+    // Сворачивание блока "Все бригады"
     const allBrigadesHeader = document.getElementById('allBrigadesHeader');
     const allBrigadesContent = document.getElementById('allBrigadesContent');
     if(allBrigadesHeader) {
@@ -982,6 +800,7 @@
         });
     }
     
+    // Обработчики событий
     const brigadeSelect = document.getElementById('brigadeSelect');
     const wellNumberInput = document.getElementById('wellNumber');
     const fieldNameInput = document.getElementById('fieldName');
