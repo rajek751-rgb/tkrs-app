@@ -8,7 +8,6 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        /* --- НОВЫЙ ФОН С ВАШЕЙ КАРТИНКОЙ РН-Сервис.png --- */
         body { 
             font-family: 'Segoe UI', Roboto, sans-serif; 
             background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
@@ -16,7 +15,6 @@
             padding: 20px; 
         }
         
-        /* ВАШЕ ИЗОБРАЖЕНИЕ НА ФОНЕ (замените URL на точный путь к вашему файлу в GitHub) */
         body::before {
             content: "";
             position: fixed;
@@ -24,16 +22,15 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: url('РН-Сервис.png'); /* ← Здесь ваша картинка */
+            background-image: url('РН-Сервис.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            opacity: 0.55; /* Увеличена видимость фона */
+            opacity: 0.55;
             pointer-events: none;
             z-index: 0;
         }
         
-        /* Лёгкий слой для читаемости текста */
         body::after {
             content: "";
             position: fixed;
@@ -69,7 +66,6 @@
         .brigade-row { cursor: pointer; transition: background 0.1s; }
         .brigade-row:hover { background: #f0f4f8; }
         
-        /* Анимация подсветки новой записи */
         @keyframes highlightFlash {
             0% { background-color: #fff9c4; border-left-color: #f1c40f; transform: scale(1); }
             70% { background-color: #fff9c4; border-left-color: #f1c40f; }
@@ -96,7 +92,7 @@
         .btn-file { background: #2c7cb6; color: white; display: inline-flex; align-items: center; gap: 8px; }
         .flex-btns { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
         .items-list { margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px; max-height: 400px; overflow-y: auto; }
-        .item-card { background: #f8fafc; border-radius: 20px; padding: 14px; margin-bottom: 12px; border-left: 4px solid #2c7cb6; cursor: pointer; transition: all 0.2s; }
+        .item-card { background: #f8fafc; border-radius: 20px; padding: 14px; margin-bottom: 12px; border-left: 4px solid #2c7cb6; cursor: pointer; transition: all 0.2s; word-break: break-word; white-space: normal; }
         .item-card:hover { transform: translateX(5px); background: #f0f4f8; }
         .item-title { font-weight: 700; display: flex; justify-content: space-between; margin-bottom: 8px; }
         .delete-item { background: none; border: none; color: #c0392b; font-size: 18px; cursor: pointer; padding: 0 8px; }
@@ -124,7 +120,7 @@
         .detail-tab { padding: 8px 16px; cursor: pointer; border-radius: 20px 20px 0 0; font-size: 14px; background: #f1f5f9; }
         .detail-tab.active { background: #0f2b3d; color: white; }
         .detail-list { max-height: 450px; overflow-y: auto; }
-        .detail-item { padding: 12px; border-bottom: 1px solid #eee; margin-bottom: 8px; background: #f8fafc; border-radius: 12px; font-size: 13px; }
+        .detail-item { padding: 12px; border-bottom: 1px solid #eee; margin-bottom: 8px; background: #f8fafc; border-radius: 12px; font-size: 13px; word-break: break-word; white-space: normal; }
         .detail-well { font-size: 10px; color: #888; margin-top: 4px; }
         .notification { position: fixed; top: 20px; right: 20px; background: #27ae60; color: white; padding: 12px 20px; border-radius: 12px; z-index: 3000; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -632,13 +628,13 @@
             await refreshAllData();
             await loadAllBrigadesStatsAndRender();
             await syncOfflineQueue();
-            startNotificationChecker(); // Запускаем проверку уведомлений по заявкам
+            startNotificationChecker();
             return true;
         }
         return false;
     }
     
-    // ========== НОВАЯ ФУНКЦИЯ: УВЕДОМЛЕНИЯ И ЗВУК ПО ЗАЯВКАМ ==========
+    // ========== УВЕДОМЛЕНИЯ И ЗВУК ПО ЗАЯВКАМ ==========
     let notificationInterval = null;
     let audioContext = null;
     
@@ -670,12 +666,10 @@
             const timeDiff = deadline - now;
             const hoursDiff = timeDiff / (1000 * 60 * 60);
             
-            // Если до дедлайна менее 1 часа и ещё не было уведомления
             if (hoursDiff > 0 && hoursDiff < 1 && !req._notified) {
                 req._notified = true;
                 addLocalItem('requests', req);
                 
-                // Запрашиваем разрешение на уведомления
                 if (Notification.permission === 'granted') {
                     new Notification(`⏰ Напоминание по заявке!`, {
                         body: `Бригада: ${req.brigade || currentBrigade}\nТип: ${req.type}\nДействие: ${req.action}\nДедлайн: ${formatDateTime(req.deadline)}\nТребуется подтверждение/перенос!`,
@@ -696,8 +690,7 @@
         if (notificationInterval) clearInterval(notificationInterval);
         notificationInterval = setInterval(() => {
             checkRequestDeadlines();
-        }, 5 * 60 * 1000); // Каждые 5 минут
-        // Первая проверка через 1 секунду
+        }, 5 * 60 * 1000);
         setTimeout(() => checkRequestDeadlines(), 1000);
     }
     
@@ -877,7 +870,6 @@
     }
     async function deleteSummaryFromDB(id) { deleteLocalItem('summaries',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('summaries').delete().eq('brigade', currentBrigade).eq('summary_data->>id', id.toString()); cache[`summary_${currentBrigade}`]=null; return true; }
     
-    // Функция подсветки новой записи
     function highlightNewItem(containerId, itemId) {
         setTimeout(() => {
             const container = document.getElementById(containerId);
@@ -922,6 +914,14 @@
                 if(sumData.data) summaries = sumData.data.map(r => r.summary_data);
             } catch(e) {}
         }
+        
+        // СОРТИРОВКА ОТ НОВЫХ К СТАРЫМ (по _timestamp)
+        const sortByDate = (arr) => arr.sort((a,b) => (b._timestamp || 0) - (a._timestamp || 0));
+        operations = sortByDate(operations);
+        nsj = sortByDate(nsj);
+        requests = sortByDate(requests);
+        summaries = sortByDate(summaries);
+        
         return { operations, nsj, requests, summaries };
     }
     
@@ -956,7 +956,7 @@
             </div>`).join('');
         } else {
             return items.map(item => `<div class="detail-item">
-                📊 ${item.volume?.substring(0, 50) || 'Работа'}<br>
+                📊 ${item.volume || 'Работа'}<br>
                 📅 ${formatDateTime(item.start_datetime)} — ${formatDateTime(item.end_datetime)}<br>
                 ${item.file ? `<a href="${item.file}" target="_blank" style="color:#2c7cb6;">📎 Ссылка на файл</a>` : '📎 —'}<br>
                 <div class="detail-well">🛢️ ${item.well || '—'}</div>
@@ -1053,7 +1053,6 @@
         });
     }
     
-    // Функция для отображения НСЖ сводки с датой редактирования
     async function renderNsjAllPanel() {
         const filter = document.getElementById('filterCdngSelect').value;
         const items = await loadAllNsjPending(filter);
@@ -1180,7 +1179,7 @@
         if(!summary?.length){ container.innerHTML='<div class="info-text">Нет записей</div>'; return; } 
         let html=''; 
         summary.forEach(rec=>{ 
-            html+=`<div class="item-card" data-sum-card="${rec.id}"><div class="item-title"><span>📊 ${rec.volume?.substring(0,40)||'Работа'}</span>${isEditMode?`<button class="delete-item" data-summary-id="${rec.id}">🗑</button>`:''}</div><div>📅 ${formatDateTime(rec.start_datetime)} — ${formatDateTime(rec.end_datetime)}</div><div>${rec.file ? `<a href="${rec.file}" target="_blank" style="color:#2c7cb6;">📎 Открыть файл</a>` : '📎 —'}</div><div class="small-well">🛢️ ${rec.well||getFullWellName()}</div><div class="timestamp">📅 ${rec._timestamp ? formatDateTime(rec._timestamp) : '—'}</div></div>`; 
+            html+=`<div class="item-card" data-sum-card="${rec.id}"><div class="item-title"><span>📊 ${rec.volume || 'Работа'}</span>${isEditMode?`<button class="delete-item" data-summary-id="${rec.id}">🗑</button>`:''}</div><div>📅 ${formatDateTime(rec.start_datetime)} — ${formatDateTime(rec.end_datetime)}</div><div>${rec.file ? `<a href="${rec.file}" target="_blank" style="color:#2c7cb6;">📎 Открыть файл</a>` : '📎 —'}</div><div class="small-well">🛢️ ${rec.well||getFullWellName()}</div><div class="timestamp">📅 ${rec._timestamp ? formatDateTime(rec._timestamp) : '—'}</div></div>`; 
         }); 
         container.innerHTML=html; 
         if(isEditMode) document.querySelectorAll('[data-summary-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteSummaryFromDB(btn.dataset.summaryId); refreshAllData();})); 
@@ -1221,7 +1220,6 @@
         });
     }
     
-    // Сворачивание блока "Все бригады"
     function initCollapsibleCard() {
         const allBrigadesHeader = document.getElementById('allBrigadesHeader');
         const allBrigadesContent = document.getElementById('allBrigadesContent');
@@ -1303,7 +1301,6 @@
             brigade: currentBrigade
         }); 
         refreshAllData();
-        // При добавлении заявки проверяем уведомления
         setTimeout(() => checkRequestDeadlines(), 1000);
     });
     
