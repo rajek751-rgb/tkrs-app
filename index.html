@@ -65,6 +65,8 @@
         .compact-brigade-table th { background: #f1f5f9; font-weight: 700; color: #1e3a4d; font-size: 12px; }
         .brigade-row { cursor: pointer; transition: background 0.1s; }
         .brigade-row:hover { background: #f0f4f8; }
+        .brigade-row.unread { font-weight: 700; background-color: #fff8e7; }
+        .brigade-row.unread td:first-child::before { content: "🔵 "; font-size: 12px; }
         
         @keyframes highlightFlash {
             0% { background-color: #fff9c4; border-left-color: #f1c40f; transform: scale(1); }
@@ -894,6 +896,104 @@
         return []; 
     }
     
+    // ========== НОВЫЕ ФУНКЦИИ ДЛЯ СОРТИРОВКИ И ПОДСВЕТКИ НЕПРОЧИТАННОГО ==========
+    // Хранилище времени последнего просмотра бригады (для каждого пользователя)
+    let lastViewedBrigades = {};
+    
+    function loadLastViewed() {
+        const saved = localStorage.getItem('tkrs_last_viewed_brigades');
+        if (saved) lastViewedBrigades = JSON.parse(saved);
+    }
+    function saveLastViewed() {
+        localStorage.setItem('tkrs_last_viewed_brigades', JSON.stringify(lastViewedBrigades));
+    }
+    
+    // Обновить время просмотра бригады (вызывается при открытии деталей)
+    function markBrigadeAsRead(brigadeName) {
+        lastViewedBrigades[brigadeName] = Date.now();
+        saveLastViewed();
+        // Перерисовать статистику, чтобы убрать подсветку
+        loadAllBrigadesStatsAndRender();
+    }
+    
+    // Получить максимальную дату изменения среди всех данных бригады (операции, НСЖ, заявки, сводка)
+    function getBrigadeLastChangeDate(brigadeName) {
+        let maxTs = 0;
+        const types = ['operations', 'nsj', 'requests', 'summaries'];
+        for (let type of types) {
+            const items = getLocalItemsForBrigade(type, brigadeName);
+            for (let item of items) {
+                const ts = item._timestamp ? new Date(item._timestamp).getTime() : 0;
+                if (ts > maxTs) maxTs = ts;
+            }
+        }
+        // Если есть данные из Supabase (online) — они уже попали в localDataStore через addLocalItem,
+        // поэтому достаточно localDataStore. Но если онлайн и данные не были загружены — подстрахуемся.
+        // В refreshAllData мы вызываем loadAllBrigadesStatsAndRender после загрузки, так что всё ок.
+        return maxTs;
+    }
+    
+    async function loadAllBrigadesStatsAndRender() {
+        if (!supabaseClient && !localDataStore) {
+            const container = document.getElementById('allBrigadesCompact');
+            if(container) container.innerHTML = '<div class="info-text">Загрузка данных...</div>';
+            return;
+        }
+        const brigades = ["109 Бригада КРС","111 Бригада КРС","112 Бригада КРС","124 Бригада КРС","125 Бригада КРС","126 Бригада КРС","129 Бригада КРС","140 Бригада КРС","142 Бригада КРС","143 Бригада КРС","144 Бригада КРС","3 Бригада КРС","32 Бригада КРС","34 Бригада ПРС","35 Бригада КРС","4 Бригада ПРС","41 Бригада КРС","44 Бригада ПРС","45 Бригада ПРС","46 Бригада ПРС","47 Бригада ПРС","5 Бригада КРС","59 Бригада ПРС","60 Бригада КРС","61 Бригада КРС","70 Бригада КРС","71 Бригада КРС","72 Бригада КРС","73 Бригада КРС","74 Бригада КРС","75 Бригада КРС","76 Бригада КРС","77 Бригада КРС","8 Бригада КРС"];
+        const stats = [];
+        for (const br of brigades) {
+            let ops = getLocalItemsForBrigade('operations', br).length;
+            let reqs = getLocalItemsForBrigade('requests', br).length;
+            let sums = getLocalItemsForBrigade('summaries', br).length;
+            let pendingVol = 0;
+            getLocalItemsForBrigade('nsj', br).forEach(i => { if (i.completed !== true) pendingVol += parseFloat(i.volume) || 0; });
+            const lastChange = getBrigadeLastChangeDate(br);
+            stats.push({
+                brigade: br,
+                well: '',
+                summary: sums,
+                plan: ops,
+                requests: reqs,
+                pendingNsjVolume: pendingVol.toFixed(1),
+                lastChange: lastChange
+            });
+        }
+        // СОРТИРОВКА: сначала те, у кого lastChange больше (новее), потом по имени
+        stats.sort((a,b) => {
+            if (a.lastChange !== b.lastChange) return b.lastChange - a.lastChange;
+            return a.brigade.localeCompare(b.brigade);
+        });
+        
+        const container = document.getElementById('allBrigadesCompact');
+        if (!container) return;
+        if (!stats.length) { container.innerHTML = '<div class="info-text">Нет данных по бригадам</div>'; return; }
+        let html = '<table class="compact-brigade-table"><thead><tr><th>Бригада</th><th>Сводка</th><th>План</th><th>Заявки</th><th>НСЖ м³ (в работе)</th></tr></thead><tbody>';
+        stats.forEach(stat => {
+            const lastView = lastViewedBrigades[stat.brigade] || 0;
+            const isUnread = (stat.lastChange > lastView) && (stat.lastChange > 0);
+            const unreadClass = isUnread ? 'unread' : '';
+            html += `<tr class="brigade-row ${unreadClass}" data-brigade="${stat.brigade}" data-well="${stat.well}">
+                <td>${stat.brigade}</td>
+                <td>${stat.summary}</td>
+                <td>${stat.plan}</td>
+                <td>${stat.requests}</td>
+                <td>${stat.pendingNsjVolume}</td>
+             </tr>`;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+        // Навешиваем обработчики (заново, так как innerHTML обновился)
+        document.querySelectorAll('.brigade-row').forEach(row => {
+            row.addEventListener('click', () => {
+                const brigadeName = row.dataset.brigade;
+                const brigadeWell = row.dataset.well;
+                // Помечаем как прочитанное
+                markBrigadeAsRead(brigadeName);
+                showBrigadeDetails(brigadeName, brigadeWell);
+            });
+        });
+    }
+    
     async function loadBrigadeDetails(brigadeName) {
         let operations = getLocalItemsForBrigade('operations', brigadeName);
         let nsj = getLocalItemsForBrigade('nsj', brigadeName);
@@ -915,7 +1015,6 @@
             } catch(e) {}
         }
         
-        // СОРТИРОВКА ОТ НОВЫХ К СТАРЫМ (по _timestamp)
         const sortByDate = (arr) => arr.sort((a,b) => (b._timestamp || 0) - (a._timestamp || 0));
         operations = sortByDate(operations);
         nsj = sortByDate(nsj);
@@ -1002,55 +1101,6 @@
             });
         });
         modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-    }
-    
-    async function loadAllBrigadesStatsAndRender() {
-        if (!supabaseClient && !localDataStore) {
-            const container = document.getElementById('allBrigadesCompact');
-            if(container) container.innerHTML = '<div class="info-text">Загрузка данных...</div>';
-            return;
-        }
-        const brigades = ["109 Бригада КРС","111 Бригада КРС","112 Бригада КРС","124 Бригада КРС","125 Бригада КРС","126 Бригада КРС","129 Бригада КРС","140 Бригада КРС","142 Бригада КРС","143 Бригада КРС","144 Бригада КРС","3 Бригада КРС","32 Бригада КРС","34 Бригада ПРС","35 Бригада КРС","4 Бригада ПРС","41 Бригада КРС","44 Бригада ПРС","45 Бригада ПРС","46 Бригада ПРС","47 Бригада ПРС","5 Бригада КРС","59 Бригада ПРС","60 Бригада КРС","61 Бригада КРС","70 Бригада КРС","71 Бригада КРС","72 Бригада КРС","73 Бригада КРС","74 Бригада КРС","75 Бригада КРС","76 Бригада КРС","77 Бригада КРС","8 Бригада КРС"];
-        const stats = [];
-        for (const br of brigades) {
-            let ops = getLocalItemsForBrigade('operations', br).length;
-            let reqs = getLocalItemsForBrigade('requests', br).length;
-            let sums = getLocalItemsForBrigade('summaries', br).length;
-            let pendingVol = 0;
-            getLocalItemsForBrigade('nsj', br).forEach(i => { if (i.completed !== true) pendingVol += parseFloat(i.volume) || 0; });
-            stats.push({
-                brigade: br,
-                well: '',
-                summary: sums,
-                plan: ops,
-                requests: reqs,
-                pendingNsjVolume: pendingVol.toFixed(1)
-            });
-        }
-        stats.sort((a,b) => b.plan - a.plan);
-        
-        const container = document.getElementById('allBrigadesCompact');
-        if (!container) return;
-        if (!stats.length) { container.innerHTML = '<div class="info-text">Нет данных по бригадам</div>'; return; }
-        let html = '<table class="compact-brigade-table"><thead><tr><th>Бригада</th><th>Сводка</th><th>План</th><th>Заявки</th><th>НСЖ м³ (в работе)</th></tr></thead><tbody>';
-        stats.forEach(stat => {
-            html += `<tr class="brigade-row" data-brigade="${stat.brigade}" data-well="${stat.well}">
-                <td>${stat.brigade}</td>
-                <td>${stat.summary}</td>
-                <td>${stat.plan}</td>
-                <td>${stat.requests}</td>
-                <td>${stat.pendingNsjVolume}</td>
-            </tr>`;
-        });
-        html += '</tbody></table>';
-        container.innerHTML = html;
-        document.querySelectorAll('.brigade-row').forEach(row => {
-            row.addEventListener('click', () => {
-                const brigadeName = row.dataset.brigade;
-                const brigadeWell = row.dataset.well;
-                showBrigadeDetails(brigadeName, brigadeWell);
-            });
-        });
     }
     
     async function renderNsjAllPanel() {
@@ -1320,6 +1370,7 @@
     
     // Инициализация
     loadLocalStore();
+    loadLastViewed();   // загружаем историю просмотров
     initTabs();
     initCollapsibleCard();
     updateUIBasedOnMode();
