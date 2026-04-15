@@ -8,7 +8,6 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        /* --- НОВЫЙ ФОН С ВАШЕЙ КАРТИНКОЙ РН-Сервис.png --- */
         body { 
             font-family: 'Segoe UI', Roboto, sans-serif; 
             background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
@@ -16,7 +15,6 @@
             padding: 20px; 
         }
         
-        /* ВАШЕ ИЗОБРАЖЕНИЕ НА ФОНЕ (замените URL на точный путь к вашему файлу в GitHub) */
         body::before {
             content: "";
             position: fixed;
@@ -24,16 +22,15 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: url('РН-Сервис.png'); /* ← Здесь ваша картинка */
+            background-image: url('РН-Сервис.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            opacity: 0.55; /* Увеличена видимость фона */
+            opacity: 0.55;
             pointer-events: none;
             z-index: 0;
         }
         
-        /* Лёгкий слой для читаемости текста */
         body::after {
             content: "";
             position: fixed;
@@ -69,13 +66,12 @@
         .brigade-row { cursor: pointer; transition: background 0.1s; }
         .brigade-row:hover { background: #f0f4f8; }
         
-        /* Анимация подсветки новой записи */
         @keyframes highlightFlash {
             0% { background-color: #fff9c4; border-left-color: #f1c40f; transform: scale(1); }
             70% { background-color: #fff9c4; border-left-color: #f1c40f; }
             100% { background-color: #f8fafc; border-left-color: #2c7cb6; }
         }
-        .item-card.highlight-new {
+        .item-card.highlight-new, .brigade-row.highlight-new-brigade {
             animation: highlightFlash 1.5s ease-out 2;
         }
         
@@ -146,7 +142,7 @@
 
 <div class="app-container">
     
-    <!-- БЛОК ВСЕ БРИГАДЫ (СВЁРНУТЫЙ ПО УМОЛЧАНИЮ) -->
+    <!-- БЛОК ВСЕ БРИГАДЫ -->
     <div class="card" id="allBrigadesCard">
         <div class="card-header" id="allBrigadesHeader">
             <span>🏢</span> Все бригады
@@ -179,7 +175,7 @@
         </div>
     </div>
 
-    <!-- ОСНОВНАЯ КАРТОЧКА ВЫБОРА БРИГАДЫ -->
+    <!-- ОСНОВНАЯ КАРТОЧКА -->
     <div class="card">
         <div class="card-header">
             <span>🛢️</span> ТКРС - Сетевое планирование
@@ -308,7 +304,7 @@
             </div>
         </div>
 
-        <!-- НСЖ (нефть, жидкость, АСПО, вывоз) -->
+        <!-- НСЖ -->
         <div id="tab-nsj" class="tab-content" style="display:none;">
             <div class="card">
                 <div class="card-header"><span>💧</span> НСЖ (нефть, жидкость, АСПО, вывоз)</div>
@@ -398,7 +394,7 @@
             </div>
         </div>
 
-        <!-- Сводка с кнопкой для файла -->
+        <!-- Сводка -->
         <div id="tab-summary" class="tab-content" style="display:none;">
             <div class="card">
                 <div class="card-header"><span>📊</span> Сводка выполненных работ</div>
@@ -439,7 +435,7 @@
 <div id="syncStatus" class="sync-status">🔄 Загрузка...</div>
 
 <script>
-    // ========== ДАННЫЕ ПО ЗАЯВКАМ ИЗ EXCEL (ПОЛНОСТЬЮ ВОССТАНОВЛЕНЫ) ==========
+    // ========== ДАННЫЕ ПО ЗАЯВКАМ (ПОЛНОСТЬЮ ВОССТАНОВЛЕНЫ) ==========
     const requestRules = {
         "Завоз / вывоз оборудования ТКРС": { подача: "24 часа", перенос1: "—", перенос2: "—", подтверждение: "12 часов", примечание: "" },
         "Вызов представителей и специалистов Заказчика": { подача: "12 часов", перенос1: "—", перенос2: "—", подтверждение: "2 часа", примечание: "Вызов представителя ЦДНГ" },
@@ -592,8 +588,17 @@
         return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; 
     }
     
-    function formatDate(dateString) { if (!dateString) return '—'; const d = new Date(dateString); return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г`; }
-    function getFullWellName() { if (currentWellNumber && currentField) return `${currentWellNumber} (${currentField})`; if (currentWellNumber) return currentWellNumber; if (currentField) return currentField; return "не указано"; }
+    function getFullWellName() { 
+        const well = document.getElementById('wellNumber')?.value.trim() || currentWellNumber;
+        const field = document.getElementById('fieldName')?.value.trim() || currentField;
+        if (well && field) return `${well} (${field})`;
+        if (well) return well;
+        if (field) return field;
+        return "не указано";
+    }
+    
+    function getCurrentWellNumber() { return document.getElementById('wellNumber')?.value.trim() || currentWellNumber; }
+    function getCurrentField() { return document.getElementById('fieldName')?.value.trim() || currentField; }
     
     function showNotification(message, type = 'success') {
         const notification = document.createElement('div');
@@ -610,20 +615,6 @@
         setTimeout(() => { if (syncDiv.textContent === message) { syncDiv.textContent = '✅ Готово'; syncDiv.style.background = '#0f2b3d'; } }, 2000); }
     }
     
-    // Сохранение истории скважин при смене
-    let wellHistory = {};
-    async function saveWellHistory() {
-        if (!supabaseClient) return;
-        try {
-            await supabaseClient.from('brigade_well_history').upsert({
-                brigade: currentBrigade,
-                well_number: currentWellNumber,
-                field_name: currentField,
-                updated_at: new Date().toISOString()
-            });
-        } catch(e) { console.log('История сохраняется'); }
-    }
-    
     async function initSupabase() {
         if (typeof supabase !== 'undefined') {
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -632,13 +623,13 @@
             await refreshAllData();
             await loadAllBrigadesStatsAndRender();
             await syncOfflineQueue();
-            startNotificationChecker(); // Запускаем проверку уведомлений по заявкам
+            startNotificationChecker();
             return true;
         }
         return false;
     }
     
-    // ========== НОВАЯ ФУНКЦИЯ: УВЕДОМЛЕНИЯ И ЗВУК ПО ЗАЯВКАМ ==========
+    // ========== УВЕДОМЛЕНИЯ И ЗВУК ПО ЗАЯВКАМ ==========
     let notificationInterval = null;
     let audioContext = null;
     
@@ -670,12 +661,10 @@
             const timeDiff = deadline - now;
             const hoursDiff = timeDiff / (1000 * 60 * 60);
             
-            // Если до дедлайна менее 1 часа и ещё не было уведомления
             if (hoursDiff > 0 && hoursDiff < 1 && !req._notified) {
                 req._notified = true;
                 addLocalItem('requests', req);
                 
-                // Запрашиваем разрешение на уведомления
                 if (Notification.permission === 'granted') {
                     new Notification(`⏰ Напоминание по заявке!`, {
                         body: `Бригада: ${req.brigade || currentBrigade}\nТип: ${req.type}\nДействие: ${req.action}\nДедлайн: ${formatDateTime(req.deadline)}\nТребуется подтверждение/перенос!`,
@@ -696,8 +685,7 @@
         if (notificationInterval) clearInterval(notificationInterval);
         notificationInterval = setInterval(() => {
             checkRequestDeadlines();
-        }, 5 * 60 * 1000); // Каждые 5 минут
-        // Первая проверка через 1 секунду
+        }, 5 * 60 * 1000);
         setTimeout(() => checkRequestDeadlines(), 1000);
     }
     
@@ -721,7 +709,6 @@
                 field_name: currentField, 
                 last_active: new Date().toISOString() 
             });
-            await saveWellHistory();
         }
     }
     
@@ -738,8 +725,8 @@
         } catch(e){} 
     }
     
-    // Локальное хранилище для офлайн-режима и подсветки новых записей
-    let localDataStore = { operations: {}, nsj: {}, requests: {}, summaries: {} };
+    // Локальное хранилище
+    let localDataStore = { operations: {}, nsj: {}, requests: {}, summaries: {}, brigadeLastUpdate: {} };
     function loadLocalStore() { const saved = localStorage.getItem('tkrs_local_data'); if(saved) localDataStore = JSON.parse(saved); }
     function saveLocalStore() { localStorage.setItem('tkrs_local_data', JSON.stringify(localDataStore)); }
     
@@ -747,6 +734,8 @@
     function addLocalItem(type, item) { 
         if(!localDataStore[type][currentBrigade]) localDataStore[type][currentBrigade] = {}; 
         localDataStore[type][currentBrigade][item.id] = item; 
+        // Обновляем время последнего действия для бригады
+        localDataStore.brigadeLastUpdate[currentBrigade] = item._timestamp || new Date().toISOString();
         saveLocalStore(); 
     }
     function deleteLocalItem(type, id) { if(localDataStore[type][currentBrigade]) { delete localDataStore[type][currentBrigade][id]; saveLocalStore(); } }
@@ -760,9 +749,12 @@
             return items.sort((a,b) => (b._timestamp || 0) - (a._timestamp || 0));
         } catch(e){ return getLocalItems('operations'); } 
     }
+    
     async function addOperationToDB(op) { 
         const newId = Date.now(); 
-        const newOp = { id: newId, ...op, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField, _timestamp: new Date().toISOString() }; 
+        const wellNumber = getCurrentWellNumber();
+        const field = getCurrentField();
+        const newOp = { id: newId, ...op, wellNumber: wellNumber, field: field, well: getFullWellName(), _timestamp: new Date().toISOString() }; 
         addLocalItem('operations', newOp); 
         if (!navigator.onLine) {
             addToOfflineQueue('operation', newOp);
@@ -793,7 +785,9 @@
     }
     async function addNsjToDB(rec) { 
         const newId = Date.now(); 
-        const newRec = { id: newId, ...rec, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField, _timestamp: new Date().toISOString() }; 
+        const wellNumber = getCurrentWellNumber();
+        const field = getCurrentField();
+        const newRec = { id: newId, ...rec, wellNumber: wellNumber, field: field, well: getFullWellName(), _timestamp: new Date().toISOString() }; 
         addLocalItem('nsj', newRec); 
         if (!navigator.onLine) {
             addToOfflineQueue('nsj', newRec);
@@ -826,7 +820,9 @@
     }
     async function addRequestToDB(req) { 
         const newId = Date.now(); 
-        const newReq = { id: newId, ...req, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField, _timestamp: new Date().toISOString() }; 
+        const wellNumber = getCurrentWellNumber();
+        const field = getCurrentField();
+        const newReq = { id: newId, ...req, wellNumber: wellNumber, field: field, well: getFullWellName(), _timestamp: new Date().toISOString() }; 
         addLocalItem('requests', newReq); 
         if (!navigator.onLine) {
             addToOfflineQueue('request', newReq);
@@ -857,7 +853,9 @@
     }
     async function addSummaryToDB(sum) { 
         const newId = Date.now(); 
-        const newSum = { id: newId, ...sum, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField, _timestamp: new Date().toISOString() }; 
+        const wellNumber = getCurrentWellNumber();
+        const field = getCurrentField();
+        const newSum = { id: newId, ...sum, wellNumber: wellNumber, field: field, well: getFullWellName(), _timestamp: new Date().toISOString() }; 
         addLocalItem('summaries', newSum); 
         if (!navigator.onLine) {
             addToOfflineQueue('summary', newSum);
@@ -877,7 +875,6 @@
     }
     async function deleteSummaryFromDB(id) { deleteLocalItem('summaries',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('summaries').delete().eq('brigade', currentBrigade).eq('summary_data->>id', id.toString()); cache[`summary_${currentBrigade}`]=null; return true; }
     
-    // Функция подсветки новой записи
     function highlightNewItem(containerId, itemId) {
         setTimeout(() => {
             const container = document.getElementById(containerId);
@@ -934,7 +931,7 @@
                 Техника: ${item.tech || '—'}<br>
                 Представитель: ${item.representative || '—'}<br>
                 Оборудование: ${item.materials || '—'}<br>
-                <div class="detail-well">🛢️ ${item.well || '—'}</div>
+                <div class="detail-well">🛢️ ${item.wellNumber ? item.wellNumber + (item.field ? ` (${item.field})` : '') : '—'}</div>
                 <div class="timestamp">📅 ${item._timestamp ? formatDateTime(item._timestamp) : '—'}</div>
             </div>`).join('');
         } else if (type === 'nsj') {
@@ -942,7 +939,7 @@
                 📅 ${formatDateTime(item.datetime)}<br>
                 💧 ${item.type || 'Нефть'}: ${item.volume} м³<br>
                 ${item.completed ? '✅ Выполнено' : '⏳ В ожидании'}<br>
-                <div class="detail-well">🛢️ ${item.well || '—'}</div>
+                <div class="detail-well">🛢️ ${item.wellNumber ? item.wellNumber + (item.field ? ` (${item.field})` : '') : '—'}</div>
                 <div class="timestamp">📅 ${item._timestamp ? formatDateTime(item._timestamp) : '—'}</div>
             </div>`).join('');
         } else if (type === 'req') {
@@ -951,7 +948,7 @@
                 Действие: ${item.action}<br>
                 📅 ${formatDateTime(item.deadline)}<br>
                 📝 ${item.note || ''}<br>
-                <div class="detail-well">🛢️ ${item.well || '—'}</div>
+                <div class="detail-well">🛢️ ${item.wellNumber ? item.wellNumber + (item.field ? ` (${item.field})` : '') : '—'}</div>
                 <div class="timestamp">📅 ${item._timestamp ? formatDateTime(item._timestamp) : '—'}</div>
             </div>`).join('');
         } else {
@@ -959,7 +956,7 @@
                 📊 ${item.volume?.substring(0, 50) || 'Работа'}<br>
                 📅 ${formatDateTime(item.start_datetime)} — ${formatDateTime(item.end_datetime)}<br>
                 ${item.file ? `<a href="${item.file}" target="_blank" style="color:#2c7cb6;">📎 Ссылка на файл</a>` : '📎 —'}<br>
-                <div class="detail-well">🛢️ ${item.well || '—'}</div>
+                <div class="detail-well">🛢️ ${item.wellNumber ? item.wellNumber + (item.field ? ` (${item.field})` : '') : '—'}</div>
                 <div class="timestamp">📅 ${item._timestamp ? formatDateTime(item._timestamp) : '—'}</div>
             </div>`).join('');
         }
@@ -1018,16 +1015,19 @@
             let sums = getLocalItemsForBrigade('summaries', br).length;
             let pendingVol = 0;
             getLocalItemsForBrigade('nsj', br).forEach(i => { if (i.completed !== true) pendingVol += parseFloat(i.volume) || 0; });
+            const lastUpdate = localDataStore.brigadeLastUpdate[br] || '1970-01-01';
             stats.push({
                 brigade: br,
                 well: '',
                 summary: sums,
                 plan: ops,
                 requests: reqs,
-                pendingNsjVolume: pendingVol.toFixed(1)
+                pendingNsjVolume: pendingVol.toFixed(1),
+                lastUpdate: lastUpdate
             });
         }
-        stats.sort((a,b) => b.plan - a.plan);
+        // СОРТИРОВКА: сначала более новые (по дате последнего обновления)
+        stats.sort((a,b) => (b.lastUpdate || '1970-01-01').localeCompare(a.lastUpdate || '1970-01-01'));
         
         const container = document.getElementById('allBrigadesCompact');
         if (!container) return;
@@ -1053,7 +1053,17 @@
         });
     }
     
-    // Функция для отображения НСЖ сводки с датой редактирования
+    function highlightBrigadeRow(brigadeName) {
+        const rows = document.querySelectorAll('.brigade-row');
+        for (let row of rows) {
+            if (row.dataset.brigade === brigadeName) {
+                row.classList.add('highlight-new-brigade');
+                setTimeout(() => row.classList.remove('highlight-new-brigade'), 3000);
+                break;
+            }
+        }
+    }
+    
     async function renderNsjAllPanel() {
         const filter = document.getElementById('filterCdngSelect').value;
         const items = await loadAllNsjPending(filter);
@@ -1066,7 +1076,7 @@
         items.forEach(i => {
             html += `<div class="item-card">
                 <strong>🏭 ${i.brigade}</strong>
-                <div class="small-well">🛢️ Скв: ${i.well}</div>
+                <div class="small-well">🛢️ Скв: ${i.wellNumber || i.well || '—'}</div>
                 <div>📅 ${formatDateTime(i.datetime)}</div>
                 <div>💧 ${i.cdng}: ${i.volume} м³</div>
                 <div class="timestamp">📅 ${i._timestamp ? formatDateTime(i._timestamp) : '—'}</div>
@@ -1090,7 +1100,8 @@
                 if (filterCdng === 'all' || i.type === filterCdng) {
                     all.push({ 
                         brigade: br, 
-                        well: i.wellNumber || i.well || '—', 
+                        wellNumber: i.wellNumber,
+                        well: i.well || '—', 
                         volume: i.volume, 
                         datetime: i.datetime, 
                         cdng: i.type,
@@ -1125,7 +1136,11 @@
     }
     
     function updateUIBasedOnMode() { document.querySelectorAll('.editable-field').forEach(f => f.disabled = !isEditMode); document.querySelectorAll('#addOperationBtn, #saveNsjBtn, #addRequestBtn, #addSummaryRecord, #fileUploadBtn').forEach(b => b.disabled = !isEditMode); document.getElementById('accessBadge').innerHTML = isEditMode ? '<span class="edit-mode-badge">✏️ Режим редактирования</span>' : '<span class="readonly-badge">👁️ Режим просмотра</span>'; updateWellInfo(); }
-    function updateWellInfo() { document.getElementById('currentWellInfo').innerHTML = `<div><strong>🏭 Бригада:</strong> ${currentBrigade}</div><div><strong>🛢️ Скважина/Месторождение:</strong> ${getFullWellName()}</div><div class="action-hint">${isEditMode ? '✏️ Режим редактирования АКТИВЕН' : '🔒 Режим просмотра'}</div>`; }
+    function updateWellInfo() { 
+        const wellNum = getCurrentWellNumber();
+        const field = getCurrentField();
+        document.getElementById('currentWellInfo').innerHTML = `<div><strong>🏭 Бригада:</strong> ${currentBrigade}</div><div><strong>🛢️ Скважина/Месторождение:</strong> ${wellNum && field ? `${wellNum} (${field})` : (wellNum || field || 'не указано')}</div><div class="action-hint">${isEditMode ? '✏️ Режим редактирования АКТИВЕН' : '🔒 Режим просмотра'}</div>`; 
+    }
     function requestPassword() { const overlay = document.createElement('div'); overlay.className = 'password-overlay'; overlay.innerHTML = `<div class="password-modal"><h3>🔐 Пароль</h3><input type="password" id="passwordInput" placeholder="Пароль" style="width:100%; margin:16px 0; padding:12px;"><div class="flex-btns"><button class="btn" id="cancelPassword">Отмена</button><button class="btn btn-primary" id="submitPassword">Войти</button></div></div>`; document.body.appendChild(overlay); document.getElementById('submitPassword').addEventListener('click',()=>{ if(document.getElementById('passwordInput').value===EDIT_PASSWORD){ isEditMode=true; updateUIBasedOnMode(); showNotification('Режим редактирования активирован'); overlay.remove(); refreshAllData(); } else { showNotification('Неверный пароль','error'); overlay.remove(); } }); document.getElementById('cancelPassword').addEventListener('click',()=>overlay.remove()); }
     
     async function refreshAllData() { if(isLoading) return; isLoading=true; const [ops, nsj, reqs, sums] = await Promise.all([loadOperations(), loadNsj(), loadRequests(), loadSummary()]); renderOperations(ops); renderNsjHistory(nsj); renderRequests(reqs); renderSummary(sums); updateUIBasedOnMode(); isLoading=false; await loadAllBrigadesStatsAndRender(); }
@@ -1136,7 +1151,7 @@
         if(!ops?.length){ container.innerHTML='<div class="info-text">Нет операций</div>'; return; } 
         let html=''; 
         ops.forEach(op=>{ 
-            html+=`<div class="item-card" data-op-card="${op.id}"><div class="item-title"><span>🔧 ${op.name}</span>${isEditMode?`<button class="delete-item" data-op-id="${op.id}">🗑</button>`:''}</div><div>📅 ${smartDateTimeRange(op.startDateTime, op.endDateTime)}</div><div>Техника: ${op.tech||'—'}</div><div>👤 ${op.representative||'—'}</div><div>📦 ${op.materials||'—'}</div><div class="small-well">🛢️ ${op.well||getFullWellName()}</div><div class="timestamp">📅 ${op._timestamp ? formatDateTime(op._timestamp) : '—'}</div></div>`; 
+            html+=`<div class="item-card" data-op-card="${op.id}"><div class="item-title"><span>🔧 ${op.name}</span>${isEditMode?`<button class="delete-item" data-op-id="${op.id}">🗑</button>`:''}</div><div>📅 ${smartDateTimeRange(op.startDateTime, op.endDateTime)}</div><div>Техника: ${op.tech||'—'}</div><div>👤 ${op.representative||'—'}</div><div>📦 ${op.materials||'—'}</div><div class="small-well">🛢️ ${op.wellNumber ? op.wellNumber + (op.field ? ` (${op.field})` : '') : '—'}</div><div class="timestamp">📅 ${op._timestamp ? formatDateTime(op._timestamp) : '—'}</div></div>`; 
         }); 
         container.innerHTML=html; 
         if(isEditMode) document.querySelectorAll('[data-op-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteOperationFromDB(btn.dataset.opId); refreshAllData();})); 
@@ -1172,7 +1187,7 @@
         } 
     }
     
-    function renderRequests(requests) { const container = document.getElementById('requestsList'); if(!container) return; if(!requests?.length){ container.innerHTML='<div class="info-text">Нет заявок</div>'; return; } let html=''; requests.forEach(req=>{ html+=`<div class="item-card" data-req-card="${req.id}"><div class="item-title"><span>📋 ${req.type}</span>${isEditMode?`<button class="delete-item" data-req-id="${req.id}">🗑</button>`:''}</div><div>Действие: ${req.action}</div><div>📅 ${formatDateTime(req.deadline)}</div><div>📝 ${req.note||''}</div><div class="small-well">🛢️ ${req.well||getFullWellName()}</div><div class="timestamp">📅 ${req._timestamp ? formatDateTime(req._timestamp) : '—'}</div></div>`; }); container.innerHTML=html; if(isEditMode) document.querySelectorAll('[data-req-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteRequestFromDB(btn.dataset.reqId); refreshAllData();})); }
+    function renderRequests(requests) { const container = document.getElementById('requestsList'); if(!container) return; if(!requests?.length){ container.innerHTML='<div class="info-text">Нет заявок</div>'; return; } let html=''; requests.forEach(req=>{ html+=`<div class="item-card" data-req-card="${req.id}"><div class="item-title"><span>📋 ${req.type}</span>${isEditMode?`<button class="delete-item" data-req-id="${req.id}">🗑</button>`:''}</div><div>Действие: ${req.action}</div><div>📅 ${formatDateTime(req.deadline)}</div><div>📝 ${req.note||''}</div><div class="small-well">🛢️ ${req.wellNumber ? req.wellNumber + (req.field ? ` (${req.field})` : '') : '—'}</div><div class="timestamp">📅 ${req._timestamp ? formatDateTime(req._timestamp) : '—'}</div></div>`; }); container.innerHTML=html; if(isEditMode) document.querySelectorAll('[data-req-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteRequestFromDB(btn.dataset.reqId); refreshAllData();})); }
     
     function renderSummary(summary) { 
         const container = document.getElementById('summaryList'); 
@@ -1180,7 +1195,7 @@
         if(!summary?.length){ container.innerHTML='<div class="info-text">Нет записей</div>'; return; } 
         let html=''; 
         summary.forEach(rec=>{ 
-            html+=`<div class="item-card" data-sum-card="${rec.id}"><div class="item-title"><span>📊 ${rec.volume?.substring(0,40)||'Работа'}</span>${isEditMode?`<button class="delete-item" data-summary-id="${rec.id}">🗑</button>`:''}</div><div>📅 ${formatDateTime(rec.start_datetime)} — ${formatDateTime(rec.end_datetime)}</div><div>${rec.file ? `<a href="${rec.file}" target="_blank" style="color:#2c7cb6;">📎 Открыть файл</a>` : '📎 —'}</div><div class="small-well">🛢️ ${rec.well||getFullWellName()}</div><div class="timestamp">📅 ${rec._timestamp ? formatDateTime(rec._timestamp) : '—'}</div></div>`; 
+            html+=`<div class="item-card" data-sum-card="${rec.id}"><div class="item-title"><span>📊 ${rec.volume?.substring(0,40)||'Работа'}</span>${isEditMode?`<button class="delete-item" data-summary-id="${rec.id}">🗑</button>`:''}</div><div>📅 ${formatDateTime(rec.start_datetime)} — ${formatDateTime(rec.end_datetime)}</div><div>${rec.file ? `<a href="${rec.file}" target="_blank" style="color:#2c7cb6;">📎 Открыть файл</a>` : '📎 —'}</div><div class="small-well">🛢️ ${rec.wellNumber ? rec.wellNumber + (rec.field ? ` (${rec.field})` : '') : '—'}</div><div class="timestamp">📅 ${rec._timestamp ? formatDateTime(rec._timestamp) : '—'}</div></div>`; 
         }); 
         container.innerHTML=html; 
         if(isEditMode) document.querySelectorAll('[data-summary-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteSummaryFromDB(btn.dataset.summaryId); refreshAllData();})); 
@@ -1188,7 +1203,6 @@
     
     function initTabs() { const btns = document.querySelectorAll('.tab-btn'); const tabs = ['graph','nsj','requests','summary']; btns.forEach((btn,idx)=>{ btn.addEventListener('click',()=>{ btns.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); tabs.forEach(tab=>{ document.getElementById(`tab-${tab}`).style.display='none'; }); document.getElementById(`tab-${tabs[idx]}`).style.display='block'; if(tabs[idx]==='requests') updateRequestHintFromRules(); }); }); }
     
-    // Файловая галерея
     let uploadedFiles = [];
     const fileInput = document.getElementById('fileInput');
     const fileUploadBtn = document.getElementById('fileUploadBtn');
@@ -1221,7 +1235,6 @@
         });
     }
     
-    // Сворачивание блока "Все бригады"
     function initCollapsibleCard() {
         const allBrigadesHeader = document.getElementById('allBrigadesHeader');
         const allBrigadesContent = document.getElementById('allBrigadesContent');
@@ -1233,7 +1246,7 @@
         }
     }
     
-    // Обработчики событий
+    // Обработчики
     const brigadeSelect = document.getElementById('brigadeSelect');
     const wellNumberInput = document.getElementById('wellNumber');
     const fieldNameInput = document.getElementById('fieldName');
@@ -1277,7 +1290,8 @@
             representative: document.getElementById('opRepresentative').value, 
             materials: document.getElementById('opMaterials').value 
         }); 
-        refreshAllData(); 
+        refreshAllData();
+        highlightBrigadeRow(currentBrigade);
     });
     
     document.getElementById('saveNsjBtn')?.addEventListener('click', async () => { 
@@ -1288,14 +1302,15 @@
             volume: parseFloat(document.getElementById('nsjVolume').value), 
             completed: false 
         }); 
-        refreshAllData(); 
+        refreshAllData();
+        highlightBrigadeRow(currentBrigade);
     });
     
     document.getElementById('addRequestBtn')?.addEventListener('click', async () => { 
         if(!isEditMode){ showNotification("Нет прав редактирования",'error'); return; } 
         const type = document.getElementById('requestType').value; 
         if(!type){ showNotification("Выберите тип заявки",'error'); return; } 
-        const newReq = await addRequestToDB({ 
+        await addRequestToDB({ 
             type, 
             action: document.getElementById('requestAction').value, 
             deadline: document.getElementById('requestDeadline').value, 
@@ -1303,7 +1318,7 @@
             brigade: currentBrigade
         }); 
         refreshAllData();
-        // При добавлении заявки проверяем уведомления
+        highlightBrigadeRow(currentBrigade);
         setTimeout(() => checkRequestDeadlines(), 1000);
     });
     
@@ -1315,7 +1330,8 @@
             volume: document.getElementById('workVolume').value, 
             file: document.getElementById('fileLink').value 
         }); 
-        refreshAllData(); 
+        refreshAllData();
+        highlightBrigadeRow(currentBrigade);
     });
     
     document.getElementById('requestType')?.addEventListener('change', updateRequestHintFromRules);
