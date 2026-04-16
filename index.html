@@ -236,7 +236,7 @@
             <div class="flex-btns">
                 <button class="btn btn-warning" id="unlockEditBtn" style="width: 100%;">🔓 Включить режим редактирования (пароль: tkrs2026)</button>
             </div>
-            <div class="info-text">✅ Все данные видны без пароля. Для добавления/изменения данных нажмите кнопку выше и введите пароль.</div>
+            <div class="info-text">✅ Все данные видны без пароля. Для добавления/изменения данных нажмите кнопку выше и введите пароль для выбранной бригады.</div>
         </div>
     </div>
 
@@ -486,8 +486,33 @@
     let currentBrigade = "109 Бригада КРС";
     let currentWellNumber = "";
     let currentField = "";
-    let isEditMode = false;
     let supabaseClient = null;
+    
+    // ========== НОВАЯ СИСТЕМА ПАРОЛЕЙ ПО БРИГАДАМ ==========
+    // Храним разблокированные бригады в localStorage
+    let unlockedBrigades = {};
+    
+    function loadUnlockedBrigades() {
+        const saved = localStorage.getItem('tkrs_unlocked_brigades');
+        if (saved) unlockedBrigades = JSON.parse(saved);
+    }
+    function saveUnlockedBrigades() {
+        localStorage.setItem('tkrs_unlocked_brigades', JSON.stringify(unlockedBrigades));
+    }
+    
+    function isCurrentBrigadeEditable() {
+        return unlockedBrigades[currentBrigade] === true;
+    }
+    
+    function setBrigadeEditable(editable) {
+        if (editable) {
+            unlockedBrigades[currentBrigade] = true;
+        } else {
+            delete unlockedBrigades[currentBrigade];
+        }
+        saveUnlockedBrigades();
+        updateUIBasedOnMode();
+    }
     
     // ========== ОФЛАЙН-СИНХРОНИЗАЦИЯ ==========
     let offlineQueue = [];
@@ -709,7 +734,7 @@
     }
     
     async function saveBrigadeInfo() { 
-        if (supabaseClient && isEditMode) {
+        if (supabaseClient && isCurrentBrigadeEditable()) {
             await supabaseClient.from('brigades').upsert({ 
                 brigade_name: currentBrigade, 
                 well_number: currentWellNumber, 
@@ -756,6 +781,7 @@
         } catch(e){ return getLocalItems('operations'); } 
     }
     async function addOperationToDB(op) { 
+        if (!isCurrentBrigadeEditable()) { showNotification("Нет прав для этой бригады. Введите пароль.", 'error'); return null; }
         const newId = Date.now(); 
         const newOp = { id: newId, ...op, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField, _timestamp: new Date().toISOString() }; 
         addLocalItem('operations', newOp); 
@@ -775,7 +801,7 @@
             return newOp;
         }
     }
-    async function deleteOperationFromDB(id) { deleteLocalItem('operations',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('operations').delete().eq('brigade', currentBrigade).eq('operation_data->>id', id.toString()); cache[`operations_${currentBrigade}`]=null; return true; }
+    async function deleteOperationFromDB(id) { if (!isCurrentBrigadeEditable()) { showNotification("Нет прав", 'error'); return false; } deleteLocalItem('operations',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('operations').delete().eq('brigade', currentBrigade).eq('operation_data->>id', id.toString()); cache[`operations_${currentBrigade}`]=null; return true; }
     
     async function loadNsj() { 
         if(!supabaseClient || !navigator.onLine) return getLocalItems('nsj'); 
@@ -787,6 +813,7 @@
         } catch(e){ return getLocalItems('nsj'); } 
     }
     async function addNsjToDB(rec) { 
+        if (!isCurrentBrigadeEditable()) { showNotification("Нет прав для этой бригады. Введите пароль.", 'error'); return null; }
         const newId = Date.now(); 
         const newRec = { id: newId, ...rec, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField, _timestamp: new Date().toISOString() }; 
         addLocalItem('nsj', newRec); 
@@ -806,9 +833,9 @@
             return newRec;
         }
     }
-    async function updateNsjStatus(id, completed) { if (!supabaseClient || !isEditMode) return false; const items=getLocalItems('nsj'); const item=items.find(i=>i.id==id); if(item){ item.completed=completed; addLocalItem('nsj',item); if(navigator.onLine) await supabaseClient.from('nsj_records').update({ nsj_data: item }).eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; } return true; }
-    async function updateNsjVolume(id, volume) { if (!supabaseClient || !isEditMode) return false; const items=getLocalItems('nsj'); const item=items.find(i=>i.id==id); if(item){ item.volume=volume; addLocalItem('nsj',item); if(navigator.onLine) await supabaseClient.from('nsj_records').update({ nsj_data: item }).eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; } return true; }
-    async function deleteNsjFromDB(id) { deleteLocalItem('nsj',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('nsj_records').delete().eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; return true; }
+    async function updateNsjStatus(id, completed) { if (!isCurrentBrigadeEditable()) { showNotification("Нет прав", 'error'); return false; } const items=getLocalItems('nsj'); const item=items.find(i=>i.id==id); if(item){ item.completed=completed; addLocalItem('nsj',item); if(navigator.onLine) await supabaseClient.from('nsj_records').update({ nsj_data: item }).eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; } return true; }
+    async function updateNsjVolume(id, volume) { if (!isCurrentBrigadeEditable()) { showNotification("Нет прав", 'error'); return false; } const items=getLocalItems('nsj'); const item=items.find(i=>i.id==id); if(item){ item.volume=volume; addLocalItem('nsj',item); if(navigator.onLine) await supabaseClient.from('nsj_records').update({ nsj_data: item }).eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; } return true; }
+    async function deleteNsjFromDB(id) { if (!isCurrentBrigadeEditable()) { showNotification("Нет прав", 'error'); return false; } deleteLocalItem('nsj',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('nsj_records').delete().eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; return true; }
     
     async function loadRequests() { 
         if(!supabaseClient || !navigator.onLine) return getLocalItems('requests'); 
@@ -820,6 +847,7 @@
         } catch(e){ return getLocalItems('requests'); } 
     }
     async function addRequestToDB(req) { 
+        if (!isCurrentBrigadeEditable()) { showNotification("Нет прав для этой бригады. Введите пароль.", 'error'); return null; }
         const newId = Date.now(); 
         const newReq = { id: newId, ...req, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField, _timestamp: new Date().toISOString() }; 
         addLocalItem('requests', newReq); 
@@ -839,7 +867,7 @@
             return newReq;
         }
     }
-    async function deleteRequestFromDB(id) { deleteLocalItem('requests',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('requests').delete().eq('brigade', currentBrigade).eq('request_data->>id', id.toString()); cache[`requests_${currentBrigade}`]=null; return true; }
+    async function deleteRequestFromDB(id) { if (!isCurrentBrigadeEditable()) { showNotification("Нет прав", 'error'); return false; } deleteLocalItem('requests',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('requests').delete().eq('brigade', currentBrigade).eq('request_data->>id', id.toString()); cache[`requests_${currentBrigade}`]=null; return true; }
     
     async function loadSummary() { 
         if(!supabaseClient || !navigator.onLine) return getLocalItems('summaries'); 
@@ -851,6 +879,7 @@
         } catch(e){ return getLocalItems('summaries'); } 
     }
     async function addSummaryToDB(sum) { 
+        if (!isCurrentBrigadeEditable()) { showNotification("Нет прав для этой бригады. Введите пароль.", 'error'); return null; }
         const newId = Date.now(); 
         const newSum = { id: newId, ...sum, well: getFullWellName(), wellNumber: currentWellNumber, field: currentField, _timestamp: new Date().toISOString() }; 
         addLocalItem('summaries', newSum); 
@@ -870,7 +899,7 @@
             return newSum;
         }
     }
-    async function deleteSummaryFromDB(id) { deleteLocalItem('summaries',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('summaries').delete().eq('brigade', currentBrigade).eq('summary_data->>id', id.toString()); cache[`summary_${currentBrigade}`]=null; return true; }
+    async function deleteSummaryFromDB(id) { if (!isCurrentBrigadeEditable()) { showNotification("Нет прав", 'error'); return false; } deleteLocalItem('summaries',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('summaries').delete().eq('brigade', currentBrigade).eq('summary_data->>id', id.toString()); cache[`summary_${currentBrigade}`]=null; return true; }
     
     function highlightNewItem(containerId, itemId) {
         setTimeout(() => {
@@ -896,8 +925,7 @@
         return []; 
     }
     
-    // ========== НОВЫЕ ФУНКЦИИ ДЛЯ СОРТИРОВКИ И ПОДСВЕТКИ НЕПРОЧИТАННОГО ==========
-    // Хранилище времени последнего просмотра бригады (для каждого пользователя)
+    // ========== ФУНКЦИИ ДЛЯ СОРТИРОВКИ И ПОДСВЕТКИ НЕПРОЧИТАННОГО ==========
     let lastViewedBrigades = {};
     
     function loadLastViewed() {
@@ -908,15 +936,12 @@
         localStorage.setItem('tkrs_last_viewed_brigades', JSON.stringify(lastViewedBrigades));
     }
     
-    // Обновить время просмотра бригады (вызывается при открытии деталей)
     function markBrigadeAsRead(brigadeName) {
         lastViewedBrigades[brigadeName] = Date.now();
         saveLastViewed();
-        // Перерисовать статистику, чтобы убрать подсветку
         loadAllBrigadesStatsAndRender();
     }
     
-    // Получить максимальную дату изменения среди всех данных бригады (операции, НСЖ, заявки, сводка)
     function getBrigadeLastChangeDate(brigadeName) {
         let maxTs = 0;
         const types = ['operations', 'nsj', 'requests', 'summaries'];
@@ -927,9 +952,6 @@
                 if (ts > maxTs) maxTs = ts;
             }
         }
-        // Если есть данные из Supabase (online) — они уже попали в localDataStore через addLocalItem,
-        // поэтому достаточно localDataStore. Но если онлайн и данные не были загружены — подстрахуемся.
-        // В refreshAllData мы вызываем loadAllBrigadesStatsAndRender после загрузки, так что всё ок.
         return maxTs;
     }
     
@@ -958,7 +980,6 @@
                 lastChange: lastChange
             });
         }
-        // СОРТИРОВКА: сначала те, у кого lastChange больше (новее), потом по имени
         stats.sort((a,b) => {
             if (a.lastChange !== b.lastChange) return b.lastChange - a.lastChange;
             return a.brigade.localeCompare(b.brigade);
@@ -982,12 +1003,10 @@
         });
         html += '</tbody></table>';
         container.innerHTML = html;
-        // Навешиваем обработчики (заново, так как innerHTML обновился)
         document.querySelectorAll('.brigade-row').forEach(row => {
             row.addEventListener('click', () => {
                 const brigadeName = row.dataset.brigade;
                 const brigadeWell = row.dataset.well;
-                // Помечаем как прочитанное
                 markBrigadeAsRead(brigadeName);
                 showBrigadeDetails(brigadeName, brigadeWell);
             });
@@ -1173,9 +1192,33 @@
         }
     }
     
-    function updateUIBasedOnMode() { document.querySelectorAll('.editable-field').forEach(f => f.disabled = !isEditMode); document.querySelectorAll('#addOperationBtn, #saveNsjBtn, #addRequestBtn, #addSummaryRecord, #fileUploadBtn').forEach(b => b.disabled = !isEditMode); document.getElementById('accessBadge').innerHTML = isEditMode ? '<span class="edit-mode-badge">✏️ Режим редактирования</span>' : '<span class="readonly-badge">👁️ Режим просмотра</span>'; updateWellInfo(); }
-    function updateWellInfo() { document.getElementById('currentWellInfo').innerHTML = `<div><strong>🏭 Бригада:</strong> ${currentBrigade}</div><div><strong>🛢️ Скважина/Месторождение:</strong> ${getFullWellName()}</div><div class="action-hint">${isEditMode ? '✏️ Режим редактирования АКТИВЕН' : '🔒 Режим просмотра'}</div>`; }
-    function requestPassword() { const overlay = document.createElement('div'); overlay.className = 'password-overlay'; overlay.innerHTML = `<div class="password-modal"><h3>🔐 Пароль</h3><input type="password" id="passwordInput" placeholder="Пароль" style="width:100%; margin:16px 0; padding:12px;"><div class="flex-btns"><button class="btn" id="cancelPassword">Отмена</button><button class="btn btn-primary" id="submitPassword">Войти</button></div></div>`; document.body.appendChild(overlay); document.getElementById('submitPassword').addEventListener('click',()=>{ if(document.getElementById('passwordInput').value===EDIT_PASSWORD){ isEditMode=true; updateUIBasedOnMode(); showNotification('Режим редактирования активирован'); overlay.remove(); refreshAllData(); } else { showNotification('Неверный пароль','error'); overlay.remove(); } }); document.getElementById('cancelPassword').addEventListener('click',()=>overlay.remove()); }
+    function updateUIBasedOnMode() {
+        const editable = isCurrentBrigadeEditable();
+        // Поля ввода не блокируем, чтобы можно было вводить данные для отправки, но кнопки добавления будут проверять права
+        // Однако для удобства можно оставить поля всегда активными, а проверку делать в обработчиках
+        document.getElementById('accessBadge').innerHTML = editable ? '<span class="edit-mode-badge">✏️ Режим редактирования (пароль активен для этой бригады)</span>' : '<span class="readonly-badge">👁️ Режим просмотра (введите пароль для редактирования)</span>';
+        updateWellInfo();
+    }
+    function updateWellInfo() { document.getElementById('currentWellInfo').innerHTML = `<div><strong>🏭 Бригада:</strong> ${currentBrigade}</div><div><strong>🛢️ Скважина/Месторождение:</strong> ${getFullWellName()}</div><div class="action-hint">${isCurrentBrigadeEditable() ? '✏️ Режим редактирования АКТИВЕН' : '🔒 Режим просмотра (введите пароль для внесения данных)'}</div>`; }
+    
+    function requestPassword() { 
+        const overlay = document.createElement('div'); 
+        overlay.className = 'password-overlay'; 
+        overlay.innerHTML = `<div class="password-modal"><h3>🔐 Пароль для бригады ${currentBrigade}</h3><input type="password" id="passwordInput" placeholder="Пароль" style="width:100%; margin:16px 0; padding:12px;"><div class="flex-btns"><button class="btn" id="cancelPassword">Отмена</button><button class="btn btn-primary" id="submitPassword">Войти</button></div></div>`; 
+        document.body.appendChild(overlay); 
+        document.getElementById('submitPassword').addEventListener('click',()=>{ 
+            if(document.getElementById('passwordInput').value===EDIT_PASSWORD){ 
+                setBrigadeEditable(true); 
+                showNotification(`Режим редактирования для бригады ${currentBrigade} активирован`); 
+                overlay.remove(); 
+                refreshAllData(); 
+            } else { 
+                showNotification('Неверный пароль','error'); 
+                overlay.remove(); 
+            } 
+        }); 
+        document.getElementById('cancelPassword').addEventListener('click',()=>overlay.remove()); 
+    }
     
     async function refreshAllData() { if(isLoading) return; isLoading=true; const [ops, nsj, reqs, sums] = await Promise.all([loadOperations(), loadNsj(), loadRequests(), loadSummary()]); renderOperations(ops); renderNsjHistory(nsj); renderRequests(reqs); renderSummary(sums); updateUIBasedOnMode(); isLoading=false; await loadAllBrigadesStatsAndRender(); }
     
@@ -1185,10 +1228,10 @@
         if(!ops?.length){ container.innerHTML='<div class="info-text">Нет операций</div>'; return; } 
         let html=''; 
         ops.forEach(op=>{ 
-            html+=`<div class="item-card" data-op-card="${op.id}"><div class="item-title"><span>🔧 ${op.name}</span>${isEditMode?`<button class="delete-item" data-op-id="${op.id}">🗑</button>`:''}</div><div>📅 ${smartDateTimeRange(op.startDateTime, op.endDateTime)}</div><div>Техника: ${op.tech||'—'}</div><div>👤 ${op.representative||'—'}</div><div>📦 ${op.materials||'—'}</div><div class="small-well">🛢️ ${op.well||getFullWellName()}</div><div class="timestamp">📅 ${op._timestamp ? formatDateTime(op._timestamp) : '—'}</div></div>`; 
+            html+=`<div class="item-card" data-op-card="${op.id}"><div class="item-title"><span>🔧 ${op.name}</span>${isCurrentBrigadeEditable()?`<button class="delete-item" data-op-id="${op.id}">🗑</button>`:''}</div><div>📅 ${smartDateTimeRange(op.startDateTime, op.endDateTime)}</div><div>Техника: ${op.tech||'—'}</div><div>👤 ${op.representative||'—'}</div><div>📦 ${op.materials||'—'}</div><div class="small-well">🛢️ ${op.well||getFullWellName()}</div><div class="timestamp">📅 ${op._timestamp ? formatDateTime(op._timestamp) : '—'}</div></div>`; 
         }); 
         container.innerHTML=html; 
-        if(isEditMode) document.querySelectorAll('[data-op-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteOperationFromDB(btn.dataset.opId); refreshAllData();})); 
+        if(isCurrentBrigadeEditable()) document.querySelectorAll('[data-op-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteOperationFromDB(btn.dataset.opId); refreshAllData();})); 
     }
     
     function renderNsjHistory(nsjList) { 
@@ -1203,25 +1246,25 @@
             const statusText = isCompleted ? 'Выполнено (+)' : 'Ожидание (-)';
             html += `<div class="nsj-entry" data-nsj-card="${item.id}">
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    ${isEditMode ? `<button class="sign-btn ${statusClass}" data-nsj-id="${item.id}" data-nsj-completed="${isCompleted}">${displayStatus}</button>` : `<span style="font-weight:bold">${displayStatus}</span>`}
+                    ${isCurrentBrigadeEditable() ? `<button class="sign-btn ${statusClass}" data-nsj-id="${item.id}" data-nsj-completed="${isCompleted}">${displayStatus}</button>` : `<span style="font-weight:bold">${displayStatus}</span>`}
                     <span>📅 ${formatDateTime(item.datetime)}</span>
                     <span class="well-ref">🛢️ ${item.wellNumber || ''} ${item.field || ''}</span>
                 </div>
                 <div><strong>${item.type || 'Нефть'}</strong>: ${item.volume} м³</div>
                 <div style="font-size: 11px; color: #666;">${statusText}</div>
                 <div class="timestamp">📅 ${item._timestamp ? formatDateTime(item._timestamp) : '—'}</div>
-                ${isEditMode ? `<div><button class="edit-item" data-nsj-edit="${item.id}" data-nsj-volume="${item.volume}">✏️</button><button class="delete-item" data-nsj-del="${item.id}">🗑</button></div>` : ''}
+                ${isCurrentBrigadeEditable() ? `<div><button class="edit-item" data-nsj-edit="${item.id}" data-nsj-volume="${item.volume}">✏️</button><button class="delete-item" data-nsj-del="${item.id}">🗑</button></div>` : ''}
             </div>`; 
         }); 
         container.innerHTML = html; 
-        if(isEditMode){ 
+        if(isCurrentBrigadeEditable()){ 
             document.querySelectorAll('[data-nsj-del]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteNsjFromDB(btn.dataset.nsjDel); refreshAllData();})); 
             document.querySelectorAll('[data-nsj-edit]').forEach(btn=>btn.addEventListener('click',async(e)=>{const newVol=prompt('Новый объем (м³):',btn.dataset.nsjVolume); if(newVol && !isNaN(newVol)){ await updateNsjVolume(btn.dataset.nsjEdit, parseFloat(newVol)); refreshAllData(); }})); 
             document.querySelectorAll('[data-nsj-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{const id=btn.dataset.nsjId; const curCompleted=btn.dataset.nsjCompleted==='true'; await updateNsjStatus(id,!curCompleted); refreshAllData();})); 
         } 
     }
     
-    function renderRequests(requests) { const container = document.getElementById('requestsList'); if(!container) return; if(!requests?.length){ container.innerHTML='<div class="info-text">Нет заявок</div>'; return; } let html=''; requests.forEach(req=>{ html+=`<div class="item-card" data-req-card="${req.id}"><div class="item-title"><span>📋 ${req.type}</span>${isEditMode?`<button class="delete-item" data-req-id="${req.id}">🗑</button>`:''}</div><div>Действие: ${req.action}</div><div>📅 ${formatDateTime(req.deadline)}</div><div>📝 ${req.note||''}</div><div class="small-well">🛢️ ${req.well||getFullWellName()}</div><div class="timestamp">📅 ${req._timestamp ? formatDateTime(req._timestamp) : '—'}</div></div>`; }); container.innerHTML=html; if(isEditMode) document.querySelectorAll('[data-req-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteRequestFromDB(btn.dataset.reqId); refreshAllData();})); }
+    function renderRequests(requests) { const container = document.getElementById('requestsList'); if(!container) return; if(!requests?.length){ container.innerHTML='<div class="info-text">Нет заявок</div>'; return; } let html=''; requests.forEach(req=>{ html+=`<div class="item-card" data-req-card="${req.id}"><div class="item-title"><span>📋 ${req.type}</span>${isCurrentBrigadeEditable()?`<button class="delete-item" data-req-id="${req.id}">🗑</button>`:''}</div><div>Действие: ${req.action}</div><div>📅 ${formatDateTime(req.deadline)}</div><div>📝 ${req.note||''}</div><div class="small-well">🛢️ ${req.well||getFullWellName()}</div><div class="timestamp">📅 ${req._timestamp ? formatDateTime(req._timestamp) : '—'}</div></div>`; }); container.innerHTML=html; if(isCurrentBrigadeEditable()) document.querySelectorAll('[data-req-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteRequestFromDB(btn.dataset.reqId); refreshAllData();})); }
     
     function renderSummary(summary) { 
         const container = document.getElementById('summaryList'); 
@@ -1229,10 +1272,10 @@
         if(!summary?.length){ container.innerHTML='<div class="info-text">Нет записей</div>'; return; } 
         let html=''; 
         summary.forEach(rec=>{ 
-            html+=`<div class="item-card" data-sum-card="${rec.id}"><div class="item-title"><span>📊 ${rec.volume || 'Работа'}</span>${isEditMode?`<button class="delete-item" data-summary-id="${rec.id}">🗑</button>`:''}</div><div>📅 ${formatDateTime(rec.start_datetime)} — ${formatDateTime(rec.end_datetime)}</div><div>${rec.file ? `<a href="${rec.file}" target="_blank" style="color:#2c7cb6;">📎 Открыть файл</a>` : '📎 —'}</div><div class="small-well">🛢️ ${rec.well||getFullWellName()}</div><div class="timestamp">📅 ${rec._timestamp ? formatDateTime(rec._timestamp) : '—'}</div></div>`; 
+            html+=`<div class="item-card" data-sum-card="${rec.id}"><div class="item-title"><span>📊 ${rec.volume || 'Работа'}</span>${isCurrentBrigadeEditable()?`<button class="delete-item" data-summary-id="${rec.id}">🗑</button>`:''}</div><div>📅 ${formatDateTime(rec.start_datetime)} — ${formatDateTime(rec.end_datetime)}</div><div>${rec.file ? `<a href="${rec.file}" target="_blank" style="color:#2c7cb6;">📎 Открыть файл</a>` : '📎 —'}</div><div class="small-well">🛢️ ${rec.well||getFullWellName()}</div><div class="timestamp">📅 ${rec._timestamp ? formatDateTime(rec._timestamp) : '—'}</div></div>`; 
         }); 
         container.innerHTML=html; 
-        if(isEditMode) document.querySelectorAll('[data-summary-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteSummaryFromDB(btn.dataset.summaryId); refreshAllData();})); 
+        if(isCurrentBrigadeEditable()) document.querySelectorAll('[data-summary-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteSummaryFromDB(btn.dataset.summaryId); refreshAllData();})); 
     }
     
     function initTabs() { const btns = document.querySelectorAll('.tab-btn'); const tabs = ['graph','nsj','requests','summary']; btns.forEach((btn,idx)=>{ btn.addEventListener('click',()=>{ btns.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); tabs.forEach(tab=>{ document.getElementById(`tab-${tab}`).style.display='none'; }); document.getElementById(`tab-${tabs[idx]}`).style.display='block'; if(tabs[idx]==='requests') updateRequestHintFromRules(); }); }); }
@@ -1244,10 +1287,10 @@
     const fileGallery = document.getElementById('fileGallery');
     const fileLinkInput = document.getElementById('fileLink');
     
-    fileUploadBtn?.addEventListener('click', () => { if(isEditMode) fileInput.click(); });
+    fileUploadBtn?.addEventListener('click', () => { if(isCurrentBrigadeEditable()) fileInput.click(); else showNotification("Нет прав для загрузки файлов", 'error'); });
     fileInput?.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if(file && isEditMode){
+        if(file && isCurrentBrigadeEditable()){
             const reader = new FileReader();
             reader.onload = function(evt) {
                 const fileUrl = evt.target.result;
@@ -1293,30 +1336,36 @@
         await refreshAllData(); 
         await loadAllBrigadesStatsAndRender(); 
         showSyncStatus('Бригада изменена'); 
+        // Обновляем отображение режима (пароль запоминается для каждой бригады)
+        updateUIBasedOnMode();
     });
     
     wellNumberInput?.addEventListener('change', async () => { 
-        if(isEditMode){ 
+        if(isCurrentBrigadeEditable()){ 
             currentWellNumber = wellNumberInput.value.trim(); 
             await saveBrigadeInfo(); 
             updateWellInfo(); 
             await refreshAllData();
-        } 
+        } else {
+            showNotification("Нет прав для изменения данных бригады", 'error');
+        }
     });
     
     fieldNameInput?.addEventListener('change', async () => { 
-        if(isEditMode){ 
+        if(isCurrentBrigadeEditable()){ 
             currentField = fieldNameInput.value.trim(); 
             await saveBrigadeInfo(); 
             updateWellInfo(); 
             await refreshAllData();
-        } 
+        } else {
+            showNotification("Нет прав для изменения данных бригады", 'error');
+        }
     });
     
     document.getElementById('unlockEditBtn').addEventListener('click', () => requestPassword());
     
     document.getElementById('addOperationBtn')?.addEventListener('click', async () => { 
-        if(!isEditMode){ showNotification("Нет прав редактирования",'error'); return; } 
+        if(!isCurrentBrigadeEditable()){ showNotification("Нет прав для этой бригады. Введите пароль.", 'error'); return; } 
         await addOperationToDB({ 
             name: document.getElementById('opName').value, 
             startDateTime: document.getElementById('graphStartDateTime').value, 
@@ -1329,7 +1378,7 @@
     });
     
     document.getElementById('saveNsjBtn')?.addEventListener('click', async () => { 
-        if(!isEditMode){ showNotification("Нет прав редактирования",'error'); return; } 
+        if(!isCurrentBrigadeEditable()){ showNotification("Нет прав для этой бригады. Введите пароль.", 'error'); return; } 
         await addNsjToDB({ 
             datetime: document.getElementById('nsjDateTime').value, 
             type: document.getElementById('nsjType').value,
@@ -1340,7 +1389,7 @@
     });
     
     document.getElementById('addRequestBtn')?.addEventListener('click', async () => { 
-        if(!isEditMode){ showNotification("Нет прав редактирования",'error'); return; } 
+        if(!isCurrentBrigadeEditable()){ showNotification("Нет прав для этой бригады. Введите пароль.", 'error'); return; } 
         const type = document.getElementById('requestType').value; 
         if(!type){ showNotification("Выберите тип заявки",'error'); return; } 
         const newReq = await addRequestToDB({ 
@@ -1355,7 +1404,7 @@
     });
     
     document.getElementById('addSummaryRecord')?.addEventListener('click', async () => { 
-        if(!isEditMode){ showNotification("Нет прав редактирования",'error'); return; } 
+        if(!isCurrentBrigadeEditable()){ showNotification("Нет прав для этой бригады. Введите пароль.", 'error'); return; } 
         await addSummaryToDB({ 
             start_datetime: document.getElementById('summaryStartDateTime').value, 
             end_datetime: document.getElementById('summaryEndDateTime').value, 
@@ -1370,7 +1419,8 @@
     
     // Инициализация
     loadLocalStore();
-    loadLastViewed();   // загружаем историю просмотров
+    loadLastViewed();
+    loadUnlockedBrigades();
     initTabs();
     initCollapsibleCard();
     updateUIBasedOnMode();
