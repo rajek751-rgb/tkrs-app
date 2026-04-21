@@ -35,6 +35,7 @@
             --border-light: 0.5px solid rgba(0, 0, 0, 0.04);
             --icon-fill: #8e8e93;
             --nav-bg: rgba(248, 248, 250, 0.5);
+            --nav-text: #1c1c1e; /* цвет текста нижнего меню светлая тема */
             --well-info-bg: rgba(242, 242, 247, 0.5);
             --highlight-bg: rgba(255, 204, 0, 0.16);
         }
@@ -59,6 +60,7 @@
                 --border-light: 0.5px solid rgba(255, 255, 255, 0.08);
                 --icon-fill: #98989d;
                 --nav-bg: rgba(28, 28, 30, 0.5);
+                --nav-text: #ffffff; /* цвет текста нижнего меню тёмная тема */
                 --well-info-bg: rgba(44, 44, 46, 0.5);
                 --highlight-bg: rgba(255, 204, 0, 0.12);
             }
@@ -99,7 +101,7 @@
             margin: 0 auto;
             position: relative;
             z-index: 2;
-            padding: 100px 20px 20px 20px;
+            padding: 100px 16px 20px 16px; /* уменьшили боковые отступы */
         }
 
         /* ========== ВЕРХНЯЯ ПАНЕЛЬ ========== */
@@ -242,7 +244,7 @@
         .card:hover { transform: translateY(-2px); }
 
         .card-header {
-            padding: 16px 24px;
+            padding: 16px 20px;
             background: transparent;
             color: var(--text-primary);
             font-weight: 600;
@@ -257,12 +259,12 @@
         .card-header span { font-size: 22px; }
         .card-header .collapse-icon { margin-left: auto; font-size: 18px; transition: transform 0.3s; color: var(--text-tertiary); }
         .card-header.collapsed .collapse-icon { transform: rotate(-90deg); }
-        .card-content { padding: 20px 24px; transition: all 0.2s; color: var(--text-primary); }
+        .card-content { padding: 16px 20px; transition: all 0.2s; color: var(--text-primary); }
         .card-content.collapsed { display: none; }
 
         /* Таблицы */
         .compact-brigade-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .compact-brigade-table th, .compact-brigade-table td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--separator); }
+        .compact-brigade-table th, .compact-brigade-table td { padding: 12px 6px; text-align: left; border-bottom: 1px solid var(--separator); }
         .compact-brigade-table th { 
             background: transparent; 
             font-weight: 700; 
@@ -293,13 +295,13 @@
         .item-card.highlight-new { animation: highlightFlash 1.5s ease-out 2; }
 
         /* Формы */
-        .form-row { margin-bottom: 18px; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px; }
+        .form-row { margin-bottom: 16px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); font-size: 14px; }
         input, select, textarea {
             width: 100%;
-            padding: 12px 14px;
+            padding: 10px 12px;
             border: 1px solid var(--separator);
-            border-radius: 16px;
+            border-radius: 14px;
             font-size: 15px;
             background: var(--bg-elevated);
             backdrop-filter: blur(4px);
@@ -308,19 +310,28 @@
         }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.2); }
 
-        /* КОМПАКТНЫЙ ДАТА/ВРЕМЯ – хорошо видно после ввода */
+        /* КОМПАКТНЫЙ ДАТА/ВРЕМЯ – не выступает, шрифт видимый */
         .compact-datetime { 
             width: 100%; 
-            min-width: 0; 
-            padding: 10px 12px; 
+            padding: 10px 10px; 
             font-size: 14px; 
             background: var(--bg-elevated); 
             color: var(--text-primary); 
             border-radius: 14px; 
         }
-        .datetime-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+        .datetime-row { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+            align-items: center; 
+            margin-bottom: 8px;
+        }
+        .datetime-row .form-row {
+            flex: 1 1 160px;
+            margin-bottom: 8px;
+        }
 
-        /* Расширенные поля ввода (описание, название) */
+        /* Расширенные поля ввода */
         textarea, input[type="text"] {
             min-height: 44px;
             line-height: 1.4;
@@ -333,7 +344,7 @@
         }
 
         .btn {
-            padding: 12px 24px;
+            padding: 12px 20px;
             border-radius: 40px;
             border: none;
             font-weight: 600;
@@ -429,7 +440,7 @@
             box-shadow: var(--shadow-sm); border-left: 4px solid var(--accent-blue); backdrop-filter: blur(8px);
         }
 
-        /* НИЖНЕЕ МЕНЮ – ШРИФТ БОЛЕЕ ВИДНЫЙ */
+        /* НИЖНЕЕ МЕНЮ – шрифт согласно теме */
         .bottom-nav {
             position: fixed; bottom: 12px; left: 12px; right: 12px;
             background: var(--nav-bg); backdrop-filter: var(--blur-intensity); -webkit-backdrop-filter: var(--blur-intensity);
@@ -441,8 +452,9 @@
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none;
-            color: var(--text-tertiary); font-size: 12px; /* увеличен шрифт с 10px до 12px */
-            font-weight: 600; /* более жирный */
+            color: var(--nav-text); /* белый/черный согласно теме */
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer; transition: all 0.2s; padding: 8px 10px; border-radius: 40px;
         }
         .nav-item span:first-child { font-size: 22px; }
@@ -450,16 +462,25 @@
 
         @media (max-width: 600px) {
             .row-2cols { grid-template-columns: 1fr; }
-            .card-content { padding: 16px; }
+            .card-content { padding: 14px; }
             .compact-brigade-table { font-size: 11px; }
-            .nav-item { font-size: 11px; } /* на мобилке чуть меньше, но всё равно читаемо */
+            .nav-item { font-size: 11px; }
             .nav-item span:first-child { font-size: 20px; }
             .profile-btn { padding: 6px 12px; font-size: 13px; }
             .icon-btn { width: 36px; height: 36px; font-size: 16px; }
+            .app-container { padding: 90px 12px 20px 12px; }
         }
 
         a { color: var(--accent-blue); text-decoration: none; }
         button { font-family: inherit; }
+
+        /* Логотип ТКРС в профиле */
+        .tkrs-logo-large {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -525,11 +546,11 @@
                 <div class="card-header"><span>📊</span> Сводка выполненных работ</div>
                 <div class="card-content">
                     <div class="datetime-row">
-                        <div class="form-row" style="flex:1; min-width: 160px;">
+                        <div class="form-row">
                             <label>📅 Начало работ</label>
                             <input type="datetime-local" id="summaryStartDateTime" class="editable-field compact-datetime">
                         </div>
-                        <div class="form-row" style="flex:1; min-width: 160px;">
+                        <div class="form-row">
                             <label>⏰ Завершение работ</label>
                             <input type="datetime-local" id="summaryEndDateTime" class="editable-field compact-datetime">
                         </div>
@@ -555,23 +576,21 @@
             </div>
         </div>
 
-        <!-- План -->
+        <!-- План (без "+ Добавить операцию", только название) -->
         <div id="tab-graph" class="tab-content" style="display: block;">
             <div class="card">
                 <div class="card-header"><span>⏱️</span> План операций</div>
                 <div class="card-content">
                     <div class="datetime-row">
-                        <div class="form-row" style="flex:1; min-width: 160px;">
+                        <div class="form-row">
                             <label>📅 Начало</label>
                             <input type="datetime-local" id="graphStartDateTime" class="editable-field compact-datetime">
                         </div>
-                        <div class="form-row" style="flex:1; min-width: 160px;">
+                        <div class="form-row">
                             <label>⏰ Окончание</label>
                             <input type="datetime-local" id="graphEndDateTime" class="editable-field compact-datetime">
                         </div>
                     </div>
-                    <hr>
-                    <h4 style="margin-bottom: 12px;">➕ Добавить операцию</h4>
                     <div class="form-row">
                         <label>Название операции</label>
                         <input type="text" id="opName" class="editable-field" placeholder="Подъём ЭЦН, Демонтаж...">
@@ -656,6 +675,7 @@
                         <select id="requestType" class="editable-field">
                             <option value="">-- Выберите тип заявки --</option>
                             <option value="Завоз / вывоз оборудования ТКРС">Завоз / вывоз оборудования ТКРС</option>
+                            <option value="Завоз / вывоз химия ТКРС">Завоз / вывоз химия ТКРС</option>
                             <option value="Вызов представителей и специалистов Заказчика">Вызов представителей и специалистов Заказчика</option>
                             <option value="ГИРС (ПВР)">ГИРС (ПВР)</option>
                             <option value="Монтаж / демонтаж УЭЦН">Монтаж / демонтаж УЭЦН</option>
@@ -772,7 +792,8 @@
                     <div class="info-text">✅ Все данные видны без пароля. Для добавления/изменения данных нажмите кнопку выше и введите пароль для выбранной бригады.</div>
                     <hr>
                     <div style="text-align: center; padding: 20px;">
-                        <div style="font-size: 48px;">🛢️</div>
+                        <img src="ТКРС.png" alt="ТКРС" class="tkrs-logo-large" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div style="font-size: 48px; display: none;">🛢️</div>
                         <h2>ТКРС - Сетевое планирование</h2>
                         <p style="margin-top: 16px;">Версия 2.0<br>Система управления бригадами</p>
                         <div class="info-text">© 2025 Все права защищены</div>
@@ -821,6 +842,7 @@
     // ========== ДАННЫЕ ПО ЗАЯВКАМ ==========
     const requestRules = {
         "Завоз / вывоз оборудования ТКРС": { подача: "24 часа", перенос1: "—", перенос2: "—", подтверждение: "12 часов", примечание: "" },
+        "Завоз / вывоз химия ТКРС": { подача: "24 часа", перенос1: "—", перенос2: "—", подтверждение: "12 часов", примечание: "Химические реагенты" },
         "Вызов представителей и специалистов Заказчика": { подача: "12 часов", перенос1: "—", перенос2: "—", подтверждение: "2 часа", примечание: "Вызов представителя ЦДНГ" },
         "ГИРС (ПВР)": { подача: "16 часов", перенос1: "допускается, не более 4 часов", перенос2: "допускается, не более 4 часов", подтверждение: "8 часов", примечание: "Два переноса выезда партии по времени заявки" },
         "Монтаж / демонтаж УЭЦН": { подача: "24 часа", перенос1: "допускается", перенос2: "допускается", подтверждение: "строго за 12 и 4 часа", примечание: "Подтверждение строго за 12 часов (первое) и за 4 часа (второе)" },
