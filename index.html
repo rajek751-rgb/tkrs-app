@@ -18,7 +18,7 @@
 
         :root {
             --bg-primary: #f2f2f7;
-            --bg-secondary: rgba(255, 255, 255, 0.5);  /* прозрачность 50% */
+            --bg-secondary: rgba(255, 255, 255, 0.5);
             --bg-elevated: rgba(255, 255, 255, 0.5);
             --card-bg: rgba(255, 255, 255, 0.5);
             --text-primary: #1c1c1e;
@@ -69,12 +69,11 @@
             background: var(--bg-primary);
             color: var(--text-primary);
             position: relative;
-            padding: 0 0 90px 0; /* убрали верхний паддинг, т.к. шапка фиксирована */
+            padding: 0 0 90px 0;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Фоновый рисунок с прозрачностью 90% (видимость 90%, т.е. opacity 0.9) */
         body::before {
             content: "";
             position: fixed;
@@ -100,10 +99,10 @@
             margin: 0 auto;
             position: relative;
             z-index: 2;
-            padding: 100px 20px 20px 20px; /* отступ сверху для фиксированной шапки */
+            padding: 100px 20px 20px 20px;
         }
 
-        /* ========== ВЕРХНЯЯ ПАНЕЛЬ (ЗАКРЕПЛЕНА НАВЕРХУ, КОМПАКТНАЯ) ========== */
+        /* ========== ВЕРХНЯЯ ПАНЕЛЬ ========== */
         .top-header {
             position: fixed;
             top: 0;
@@ -124,7 +123,6 @@
             width: 100%;
         }
 
-        /* Логотип слева от профиля */
         .header-left {
             display: flex;
             align-items: center;
@@ -161,7 +159,7 @@
             border: var(--border-light);
             border-radius: 40px;
             padding: 6px 10px;
-            font-size: 18px;  /* крупнее иконки, текст убран */
+            font-size: 18px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -174,7 +172,7 @@
             height: 40px;
         }
         .icon-btn span:not(.notification-badge) {
-            display: none; /* скрываем текстовые подписи */
+            display: none;
         }
         .icon-btn:hover { background: var(--bg-secondary); }
 
@@ -193,7 +191,7 @@
             box-shadow: 0 2px 6px rgba(255, 59, 48, 0.4);
         }
 
-        /* ========== ИНФОРМАЦИЯ О БРИГАДЕ (КОМПАКТНАЯ, КАК В ПРИМЕРЕ) ========== */
+        /* ========== ИНФОРМАЦИЯ О БРИГАДЕ ========== */
         .well-info-badge {
             background: var(--well-info-bg);
             backdrop-filter: var(--blur-intensity);
@@ -229,7 +227,7 @@
             border-radius: 20px;
         }
 
-        /* ========== КАРТОЧКИ (прозрачность 50% уже в переменных) ========== */
+        /* ========== КАРТОЧКИ ========== */
         .card {
             background: var(--card-bg);
             backdrop-filter: var(--blur-intensity);
@@ -310,8 +308,29 @@
         }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.2); }
 
-        .compact-datetime { width: auto; min-width: 180px; display: inline-block; }
+        /* КОМПАКТНЫЙ ДАТА/ВРЕМЯ – хорошо видно после ввода */
+        .compact-datetime { 
+            width: 100%; 
+            min-width: 0; 
+            padding: 10px 12px; 
+            font-size: 14px; 
+            background: var(--bg-elevated); 
+            color: var(--text-primary); 
+            border-radius: 14px; 
+        }
         .datetime-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+        /* Расширенные поля ввода (описание, название) */
+        textarea, input[type="text"] {
+            min-height: 44px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
 
         .btn {
             padding: 12px 24px;
@@ -396,7 +415,7 @@
         .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
         .filter-bar select { width: auto; min-width: 140px; }
 
-        /* Чат на весь экран */
+        /* Чат */
         .chat-modal-full {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg-primary); display: flex; flex-direction: column; z-index: 4000;
@@ -410,7 +429,7 @@
             box-shadow: var(--shadow-sm); border-left: 4px solid var(--accent-blue); backdrop-filter: blur(8px);
         }
 
-        /* Нижнее меню iOS стиль */
+        /* НИЖНЕЕ МЕНЮ – ШРИФТ БОЛЕЕ ВИДНЫЙ */
         .bottom-nav {
             position: fixed; bottom: 12px; left: 12px; right: 12px;
             background: var(--nav-bg); backdrop-filter: var(--blur-intensity); -webkit-backdrop-filter: var(--blur-intensity);
@@ -422,7 +441,9 @@
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none;
-            color: var(--text-tertiary); font-size: 10px; cursor: pointer; transition: all 0.2s; padding: 8px 12px; border-radius: 40px; font-weight: 500;
+            color: var(--text-tertiary); font-size: 12px; /* увеличен шрифт с 10px до 12px */
+            font-weight: 600; /* более жирный */
+            cursor: pointer; transition: all 0.2s; padding: 8px 10px; border-radius: 40px;
         }
         .nav-item span:first-child { font-size: 22px; }
         .nav-item.active { color: var(--accent-blue); background: rgba(0,122,255,0.12); }
@@ -431,6 +452,7 @@
             .row-2cols { grid-template-columns: 1fr; }
             .card-content { padding: 16px; }
             .compact-brigade-table { font-size: 11px; }
+            .nav-item { font-size: 11px; } /* на мобилке чуть меньше, но всё равно читаемо */
             .nav-item span:first-child { font-size: 20px; }
             .profile-btn { padding: 6px 12px; font-size: 13px; }
             .icon-btn { width: 36px; height: 36px; font-size: 16px; }
@@ -444,7 +466,7 @@
 
 <div class="app-container">
     
-    <!-- ВЕРХНЯЯ ПАНЕЛЬ (ЗАКРЕПЛЕНА) -->
+    <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
     <div class="top-header">
         <div class="header-left">
             <img src="РН.png" alt="РН" class="logo-img" onerror="this.style.display='none'">
@@ -459,7 +481,7 @@
         </div>
     </div>
     
-    <!-- ИНФОРМАЦИЯ О БРИГАДЕ (КОМПАКТНАЯ) -->
+    <!-- ИНФОРМАЦИЯ О БРИГАДЕ -->
     <div id="currentWellInfo" class="well-info-badge"></div>
     
     <!-- БЛОК ВСЕ БРИГАДЫ -->
@@ -503,18 +525,18 @@
                 <div class="card-header"><span>📊</span> Сводка выполненных работ</div>
                 <div class="card-content">
                     <div class="datetime-row">
-                        <div class="form-row" style="flex:1; min-width: 180px;">
+                        <div class="form-row" style="flex:1; min-width: 160px;">
                             <label>📅 Начало работ</label>
                             <input type="datetime-local" id="summaryStartDateTime" class="editable-field compact-datetime">
                         </div>
-                        <div class="form-row" style="flex:1; min-width: 180px;">
+                        <div class="form-row" style="flex:1; min-width: 160px;">
                             <label>⏰ Завершение работ</label>
                             <input type="datetime-local" id="summaryEndDateTime" class="editable-field compact-datetime">
                         </div>
                     </div>
                     <div class="form-row">
                         <label>Выполненный объем</label>
-                        <textarea id="workVolume" rows="2" class="editable-field" placeholder="Описание выполненных работ..."></textarea>
+                        <textarea id="workVolume" rows="3" class="editable-field" placeholder="Описание выполненных работ..."></textarea>
                     </div>
                     <div class="form-row">
                         <label>📎 Файл / ссылка</label>
@@ -533,17 +555,17 @@
             </div>
         </div>
 
-        <!-- План (ранее Сетевой график) -->
+        <!-- План -->
         <div id="tab-graph" class="tab-content" style="display: block;">
             <div class="card">
                 <div class="card-header"><span>⏱️</span> План операций</div>
                 <div class="card-content">
                     <div class="datetime-row">
-                        <div class="form-row" style="flex:1; min-width: 180px;">
+                        <div class="form-row" style="flex:1; min-width: 160px;">
                             <label>📅 Начало</label>
                             <input type="datetime-local" id="graphStartDateTime" class="editable-field compact-datetime">
                         </div>
-                        <div class="form-row" style="flex:1; min-width: 180px;">
+                        <div class="form-row" style="flex:1; min-width: 160px;">
                             <label>⏰ Окончание</label>
                             <input type="datetime-local" id="graphEndDateTime" class="editable-field compact-datetime">
                         </div>
@@ -762,7 +784,7 @@
     
 </div>
 
-<!-- НИЖНЕЕ МЕНЮ (График -> План) -->
+<!-- НИЖНЕЕ МЕНЮ -->
 <div class="bottom-nav">
     <button class="nav-item" data-nav="summary">
         <span>📊</span>
@@ -1112,7 +1134,6 @@
                 last_active: new Date().toISOString() 
             });
         }
-        // Сохраняем также в localStorage для восстановления сессии
         localStorage.setItem('tkrs_profile', JSON.stringify({
             brigade: currentBrigade,
             wellNumber: currentWellNumber,
@@ -1124,7 +1145,6 @@
     }
     
     async function loadBrigadeInfo() { 
-        // Пытаемся загрузить из localStorage сохранённый профиль
         const savedProfile = localStorage.getItem('tkrs_profile');
         if (savedProfile) {
             try {
@@ -1636,7 +1656,6 @@
     const wellFieldsContainer = document.getElementById('wellFieldsContainer');
     const profileNavBtn = document.getElementById('profileNavBtn');
     
-    // При выборе значения в выпадающем списке
     if (brigadeSelect) {
         brigadeSelect.addEventListener('change', async () => {
             const selectedValue = brigadeSelect.value;
