@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>ТКРС - Сетевое планирование</title>
-    <!-- Поддержка системной темы iOS / Android / браузера -->
     <meta name="color-scheme" content="light dark">
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-    <!-- Иконка -->
     <link rel="apple-touch-icon" href="TKRS.png">
     <link rel="icon" type="image/png" href="TKRS.png">
     <meta name="mobile-web-app-capable" content="yes">
@@ -16,20 +14,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="ТКРС Планирование">
     <style>
-        /* ---------- iOS 26 SYSTEM STYLES (светлая/тёмная тема автоматически) ---------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        /* Переменные для светлой темы (по умолчанию) */
         :root {
             --bg-primary: #f2f2f7;
-            --bg-secondary: rgba(255, 255, 255, 0.72);
-            --bg-elevated: rgba(255, 255, 255, 0.86);
-            --card-bg: rgba(255, 255, 255, 0.78);
+            --bg-secondary: rgba(255, 255, 255, 0.5);  /* прозрачность 50% */
+            --bg-elevated: rgba(255, 255, 255, 0.5);
+            --card-bg: rgba(255, 255, 255, 0.5);
             --text-primary: #1c1c1e;
             --text-secondary: #3a3a3c;
             --text-tertiary: #8e8e93;
@@ -43,18 +34,17 @@
             --blur-intensity: saturate(180%) blur(20px);
             --border-light: 0.5px solid rgba(0, 0, 0, 0.04);
             --icon-fill: #8e8e93;
-            --nav-bg: rgba(248, 248, 250, 0.82);
-            --well-info-bg: rgba(242, 242, 247, 0.8);
+            --nav-bg: rgba(248, 248, 250, 0.5);
+            --well-info-bg: rgba(242, 242, 247, 0.5);
             --highlight-bg: rgba(255, 204, 0, 0.16);
         }
 
-        /* Тёмная тема (автоматически применяется при dark режиме) */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-primary: #000000;
-                --bg-secondary: rgba(28, 28, 30, 0.72);
-                --bg-elevated: rgba(28, 28, 30, 0.86);
-                --card-bg: rgba(28, 28, 30, 0.78);
+                --bg-secondary: rgba(28, 28, 30, 0.5);
+                --bg-elevated: rgba(28, 28, 30, 0.5);
+                --card-bg: rgba(28, 28, 30, 0.5);
                 --text-primary: #ffffff;
                 --text-secondary: #ebebf5;
                 --text-tertiary: #8e8e93;
@@ -68,8 +58,8 @@
                 --blur-intensity: saturate(180%) blur(24px);
                 --border-light: 0.5px solid rgba(255, 255, 255, 0.08);
                 --icon-fill: #98989d;
-                --nav-bg: rgba(28, 28, 30, 0.82);
-                --well-info-bg: rgba(44, 44, 46, 0.8);
+                --nav-bg: rgba(28, 28, 30, 0.5);
+                --well-info-bg: rgba(44, 44, 46, 0.5);
                 --highlight-bg: rgba(255, 204, 0, 0.12);
             }
         }
@@ -79,13 +69,12 @@
             background: var(--bg-primary);
             color: var(--text-primary);
             position: relative;
-            padding: 20px 20px 90px 20px;
+            padding: 0 0 90px 0; /* убрали верхний паддинг, т.к. шапка фиксирована */
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Фоновый рисунок (с адаптацией под тёмную тему) */
+        /* Фоновый рисунок с прозрачностью 90% (видимость 90%, т.е. opacity 0.9) */
         body::before {
             content: "";
             position: fixed;
@@ -97,13 +86,13 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            opacity: 0.4;
+            opacity: 0.9;
             pointer-events: none;
             z-index: 0;
             transition: opacity 0.3s ease;
         }
         @media (prefers-color-scheme: dark) {
-            body::before { opacity: 0.25; }
+            body::before { opacity: 0.9; }
         }
 
         .app-container {
@@ -111,41 +100,59 @@
             margin: 0 auto;
             position: relative;
             z-index: 2;
+            padding: 100px 20px 20px 20px; /* отступ сверху для фиксированной шапки */
         }
 
-        /* ========== ВЕРХНЯЯ ПАНЕЛЬ ========== */
+        /* ========== ВЕРХНЯЯ ПАНЕЛЬ (ЗАКРЕПЛЕНА НАВЕРХУ, КОМПАКТНАЯ) ========== */
         .top-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
-            padding: 8px 12px;
+            padding: 8px 16px;
             background: var(--bg-secondary);
             backdrop-filter: var(--blur-intensity);
             -webkit-backdrop-filter: var(--blur-intensity);
-            border-radius: 60px;
             box-shadow: var(--shadow-sm);
-            border: var(--border-light);
+            border-bottom: var(--border-light);
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
         }
 
+        /* Логотип слева от профиля */
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo-img {
+            height: 32px;
+            width: auto;
+            object-fit: contain;
+        }
         .profile-btn {
             background: var(--accent-blue);
             border: none;
             border-radius: 40px;
-            padding: 8px 16px;
-            font-size: 15px;
+            padding: 6px 14px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1);
+            gap: 6px;
+            transition: all 0.2s;
             color: white;
             box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
         }
         .profile-btn:hover { background: #005bbf; transform: scale(0.98); }
 
-        .right-icons { display: flex; gap: 12px; align-items: center; }
+        .right-icons { display: flex; gap: 8px; align-items: center; }
 
         .icon-btn {
             background: var(--bg-elevated);
@@ -153,22 +160,28 @@
             -webkit-backdrop-filter: var(--blur-intensity);
             border: var(--border-light);
             border-radius: 40px;
-            padding: 8px 14px;
-            font-size: 16px;
+            padding: 6px 10px;
+            font-size: 18px;  /* крупнее иконки, текст убран */
             cursor: pointer;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             transition: all 0.2s;
             position: relative;
             color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+        }
+        .icon-btn span:not(.notification-badge) {
+            display: none; /* скрываем текстовые подписи */
         }
         .icon-btn:hover { background: var(--bg-secondary); }
 
         .notification-badge {
             position: absolute;
-            top: -6px;
-            right: -6px;
+            top: -4px;
+            right: -4px;
             background: var(--accent-red);
             color: white;
             border-radius: 20px;
@@ -180,25 +193,43 @@
             box-shadow: 0 2px 6px rgba(255, 59, 48, 0.4);
         }
 
-        /* ========== ИНФОРМАЦИЯ О БРИГАДЕ ========== */
+        /* ========== ИНФОРМАЦИЯ О БРИГАДЕ (КОМПАКТНАЯ, КАК В ПРИМЕРЕ) ========== */
         .well-info-badge {
             background: var(--well-info-bg);
             backdrop-filter: var(--blur-intensity);
             -webkit-backdrop-filter: var(--blur-intensity);
-            border-radius: 20px;
-            padding: 14px 18px;
-            margin-bottom: 20px;
+            border-radius: 16px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
             border-left: 4px solid var(--accent-blue);
             display: flex;
-            justify-content: space-between;
             flex-wrap: wrap;
-            gap: 10px;
+            align-items: center;
+            gap: 12px 20px;
             color: var(--text-primary);
             box-shadow: var(--shadow-sm);
             border: var(--border-light);
+            font-size: 14px;
+        }
+        .well-info-badge > div {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .well-info-badge strong {
+            font-weight: 600;
+            margin-right: 4px;
+        }
+        .action-hint {
+            margin-left: auto;
+            font-size: 12px;
+            color: var(--accent-orange);
+            background: rgba(255,149,0,0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
         }
 
-        /* ========== КАРТОЧКИ ========== */
+        /* ========== КАРТОЧКИ (прозрачность 50% уже в переменных) ========== */
         .card {
             background: var(--card-bg);
             backdrop-filter: var(--blur-intensity);
@@ -207,13 +238,13 @@
             box-shadow: var(--shadow-md);
             margin-bottom: 20px;
             overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.3s;
+            transition: transform 0.2s;
             border: var(--border-light);
         }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
+        .card:hover { transform: translateY(-2px); }
 
         .card-header {
-            padding: 18px 24px;
+            padding: 16px 24px;
             background: transparent;
             color: var(--text-primary);
             font-weight: 600;
@@ -234,11 +265,24 @@
         /* Таблицы */
         .compact-brigade-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .compact-brigade-table th, .compact-brigade-table td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--separator); }
-        .compact-brigade-table th { background: transparent; font-weight: 700; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .compact-brigade-table th { 
+            background: transparent; 
+            font-weight: 700; 
+            color: var(--text-secondary); 
+            font-size: 12px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.3px;
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            z-index: 1;
+        }
         .brigade-row { cursor: pointer; transition: background 0.15s; }
         .brigade-row:hover { background: var(--bg-secondary); }
         .brigade-row.unread { font-weight: 700; background-color: var(--highlight-bg); }
         .brigade-row.highlight-row { animation: rowFlash 1.5s ease-out 2; }
+
         @keyframes rowFlash {
             0% { background-color: var(--highlight-bg); }
             70% { background-color: var(--highlight-bg); }
@@ -308,12 +352,11 @@
 
         .info-text { font-size: 13px; color: var(--text-tertiary); margin-top: 6px; }
 
-        .password-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .password-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 2000; }
         .password-modal { background: var(--bg-elevated); border-radius: 32px; padding: 28px; max-width: 350px; width: 90%; text-align: center; backdrop-filter: var(--blur-intensity); color: var(--text-primary); box-shadow: var(--shadow-md); }
 
         .edit-mode-badge { background: var(--accent-orange); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
         .readonly-badge { background: var(--accent-green); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; display: inline-block; cursor: pointer; }
-        .action-hint { font-size: 12px; color: var(--accent-orange); }
 
         .nsj-entry { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--separator); flex-wrap: wrap; gap: 8px; }
         .sign-btn { background: none; border: none; width: 36px; height: 36px; border-radius: 18px; font-size: 18px; font-weight: bold; cursor: pointer; }
@@ -373,6 +416,9 @@
             background: var(--nav-bg); backdrop-filter: var(--blur-intensity); -webkit-backdrop-filter: var(--blur-intensity);
             border-radius: 44px; display: flex; justify-content: space-around; align-items: center; padding: 8px 12px;
             box-shadow: var(--shadow-md); z-index: 1000; border: var(--border-light);
+            max-width: 800px;
+            margin: 0 auto;
+            width: calc(100% - 24px);
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none;
@@ -387,35 +433,36 @@
             .compact-brigade-table { font-size: 11px; }
             .nav-item span:first-child { font-size: 20px; }
             .profile-btn { padding: 6px 12px; font-size: 13px; }
-            .icon-btn { padding: 6px 10px; font-size: 14px; }
+            .icon-btn { width: 36px; height: 36px; font-size: 16px; }
         }
 
-        /* Адаптация ссылок и прочего */
         a { color: var(--accent-blue); text-decoration: none; }
         button { font-family: inherit; }
     </style>
-    <!-- Остальной HTML и JavaScript полностью без изменений -->
 </head>
 <body>
 
 <div class="app-container">
     
-    <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
+    <!-- ВЕРХНЯЯ ПАНЕЛЬ (ЗАКРЕПЛЕНА) -->
     <div class="top-header">
-        <button class="profile-btn" id="profileNavBtn">👤 Профиль</button>
+        <div class="header-left">
+            <img src="РН.png" alt="РН" class="logo-img" onerror="this.style.display='none'">
+            <button class="profile-btn" id="profileNavBtn">👤 Профиль</button>
+        </div>
         <div class="right-icons">
-            <button class="icon-btn" id="chatBtnFull">💬 Обсуждение</button>
+            <button class="icon-btn" id="chatBtnFull">💬<span>Обсуждение</span></button>
             <button class="icon-btn" id="notifyBtnFull">
-                🔔 Уведомления
+                🔔<span>Уведомления</span>
                 <span id="notifyCount" class="notification-badge" style="display: none;">0</span>
             </button>
         </div>
     </div>
     
-    <!-- ИНФОРМАЦИЯ О БРИГАДЕ НАВЕРХУ -->
+    <!-- ИНФОРМАЦИЯ О БРИГАДЕ (КОМПАКТНАЯ) -->
     <div id="currentWellInfo" class="well-info-badge"></div>
     
-    <!-- БЛОК ВСЕ БРИГАДЫ (РАСКРЫТ ПО УМОЛЧАНИЮ) - ВИДЕН ВСЕМ БЕЗ ПАРОЛЯ -->
+    <!-- БЛОК ВСЕ БРИГАДЫ -->
     <div class="card" id="allBrigadesCard">
         <div class="card-header" id="allBrigadesHeader">
             <span>🏢</span> Все бригады
@@ -486,10 +533,10 @@
             </div>
         </div>
 
-        <!-- Сетевой график -->
+        <!-- План (ранее Сетевой график) -->
         <div id="tab-graph" class="tab-content" style="display: block;">
             <div class="card">
-                <div class="card-header"><span>⏱️</span> Сетевой график операций</div>
+                <div class="card-header"><span>⏱️</span> План операций</div>
                 <div class="card-content">
                     <div class="datetime-row">
                         <div class="form-row" style="flex:1; min-width: 180px;">
@@ -715,7 +762,7 @@
     
 </div>
 
-<!-- НИЖНЕЕ МЕНЮ -->
+<!-- НИЖНЕЕ МЕНЮ (График -> План) -->
 <div class="bottom-nav">
     <button class="nav-item" data-nav="summary">
         <span>📊</span>
@@ -723,7 +770,7 @@
     </button>
     <button class="nav-item active" data-nav="graph">
         <span>📈</span>
-        <span>График</span>
+        <span>План</span>
     </button>
     <button class="nav-item" data-nav="nsj">
         <span>💧</span>
@@ -743,13 +790,10 @@
 
 <script>
     // ========== ПОЛНОСТЬЮ БЕЗ ИЗМЕНЕНИЙ, ИСХОДНЫЙ КОД ==========
-    // Весь JavaScript остаётся оригинальным, в точности как в задании.
-    // (Здесь находится весь предоставленный JS код, без единого изменения)
-    // ... (скопирован полностью) ...
+    // (оригинальный JS код)
 </script>
 <!-- Подключаем Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Оставшаяся часть скрипта (оригинальный код) -->
 <script>
     // (оригинальный JS код, полностью без правок)
     // ========== ДАННЫЕ ПО ЗАЯВКАМ ==========
@@ -1068,9 +1112,49 @@
                 last_active: new Date().toISOString() 
             });
         }
+        // Сохраняем также в localStorage для восстановления сессии
+        localStorage.setItem('tkrs_profile', JSON.stringify({
+            brigade: currentBrigade,
+            wellNumber: currentWellNumber,
+            field: currentField,
+            supervisor: currentSupervisor,
+            isSupervisor: isSupervisorMode,
+            unlockedBrigades: unlockedBrigades
+        }));
     }
     
     async function loadBrigadeInfo() { 
+        // Пытаемся загрузить из localStorage сохранённый профиль
+        const savedProfile = localStorage.getItem('tkrs_profile');
+        if (savedProfile) {
+            try {
+                const profile = JSON.parse(savedProfile);
+                if (profile.brigade && !isSupervisorMode) {
+                    currentBrigade = profile.brigade;
+                    currentWellNumber = profile.wellNumber || "";
+                    currentField = profile.field || "";
+                    const brigadeSelect = document.getElementById('brigadeSelect');
+                    if (brigadeSelect) brigadeSelect.value = currentBrigade;
+                    const wellNumberInput = document.getElementById('wellNumber');
+                    const fieldNameInput = document.getElementById('fieldName');
+                    if (wellNumberInput) wellNumberInput.value = currentWellNumber;
+                    if (fieldNameInput) fieldNameInput.value = currentField;
+                } else if (profile.isSupervisor) {
+                    isSupervisorMode = true;
+                    currentSupervisor = profile.supervisor || "";
+                    const brigadeSelect = document.getElementById('brigadeSelect');
+                    if (brigadeSelect) brigadeSelect.value = "supervisor";
+                    const supervisorNameInput = document.getElementById('supervisorName');
+                    if (supervisorNameInput) supervisorNameInput.value = currentSupervisor;
+                    document.getElementById('wellFieldsContainer').style.display = 'none';
+                    document.getElementById('supervisorFieldRow').style.display = 'block';
+                }
+                if (profile.unlockedBrigades) {
+                    unlockedBrigades = profile.unlockedBrigades;
+                }
+            } catch(e) {}
+        }
+        
         if (!supabaseClient || !currentBrigade || isSupervisorMode) return; 
         try { 
             const { data } = await supabaseClient.from('brigades').select('*').eq('brigade_name', currentBrigade).single(); 
@@ -1256,10 +1340,11 @@
     }
     
     function updateWellInfo() { 
+        const container = document.getElementById('currentWellInfo');
         if (isSupervisorMode) {
-            document.getElementById('currentWellInfo').innerHTML = `<div><strong>👨‍💼 Режим:</strong> Руководитель</div><div><strong>Фамилия:</strong> ${currentSupervisor || 'не указана'}</div><div class="action-hint">${isCurrentBrigadeEditable() ? '✏️ Режим редактирования АКТИВЕН' : '🔒 Режим просмотра (введите пароль для внесения данных)'}</div>`; 
+            container.innerHTML = `<div><strong>👨‍💼 Режим:</strong> Руководитель</div><div><strong>Фамилия:</strong> ${currentSupervisor || 'не указана'}</div><div class="action-hint">${isCurrentBrigadeEditable() ? '✏️ Редактирование' : '🔒 Просмотр'}</div>`; 
         } else {
-            document.getElementById('currentWellInfo').innerHTML = `<div><strong>🏭 Бригада:</strong> ${currentBrigade || 'не выбрана'}</div><div><strong>🛢️ Скважина/Месторождение:</strong> ${getFullWellName()}</div><div class="action-hint">${isCurrentBrigadeEditable() ? '✏️ Режим редактирования АКТИВЕН' : '🔒 Режим просмотра (введите пароль для внесения данных)'}</div>`; 
+            container.innerHTML = `<div><strong>🏭 Бригада:</strong> ${currentBrigade || 'не выбрана'}</div><div><strong>🛢️ Скважина/Месторождение:</strong> ${getFullWellName()}</div><div class="action-hint">${isCurrentBrigadeEditable() ? '✏️ Редактирование' : '🔒 Просмотр'}</div>`; 
         }
     }
     
@@ -1267,7 +1352,7 @@
         const overlay = document.createElement('div'); overlay.className = 'password-overlay'; 
         overlay.innerHTML = `<div class="password-modal"><h3>🔐 Пароль для ${isSupervisorMode ? 'режима Руководитель' : 'бригады ' + currentBrigade}</h3><input type="password" id="passwordInput" placeholder="Пароль" style="width:100%; margin:16px 0; padding:12px;"><div class="flex-btns"><button class="btn" id="cancelPassword">Отмена</button><button class="btn btn-primary" id="submitPassword">Войти</button></div></div>`; 
         document.body.appendChild(overlay); 
-        document.getElementById('submitPassword').addEventListener('click',()=>{ if(document.getElementById('passwordInput').value===EDIT_PASSWORD){ setBrigadeEditable(true); showToast(`Режим редактирования для ${isSupervisorMode ? 'руководителя' : 'бригады ' + currentBrigade} активирован`); overlay.remove(); refreshAllData(); } else { showToast('Неверный пароль'); overlay.remove(); } }); 
+        document.getElementById('submitPassword').addEventListener('click',()=>{ if(document.getElementById('passwordInput').value===EDIT_PASSWORD){ setBrigadeEditable(true); showToast(`Режим редактирования для ${isSupervisorMode ? 'руководителя' : 'бригады ' + currentBrigade} активирован`); overlay.remove(); refreshAllData(); saveBrigadeInfo(); } else { showToast('Неверный пароль'); overlay.remove(); } }); 
         document.getElementById('cancelPassword').addEventListener('click',()=>overlay.remove()); 
     }
     
@@ -1557,18 +1642,14 @@
             const selectedValue = brigadeSelect.value;
             
             if (selectedValue === "supervisor") {
-                // Режим руководителя
                 isSupervisorMode = true;
                 currentBrigade = "";
                 currentWellNumber = "";
                 currentField = "";
-                // Скрываем поля скважины/месторождения, показываем поле руководителя
                 wellFieldsContainer.style.display = 'none';
                 supervisorFieldRow.style.display = 'block';
-                // Очищаем значения
                 if (wellNumberInput) wellNumberInput.value = "";
                 if (fieldNameInput) fieldNameInput.value = "";
-                // Загружаем сохранённого руководителя
                 if (supabaseClient) {
                     try {
                         const { data } = await supabaseClient.from('supervisors').select('supervisor_name').order('last_active', { ascending: false }).limit(1);
@@ -1584,11 +1665,10 @@
                 updateWellInfo();
                 await refreshAllData();
                 updateUIBasedOnMode();
+                saveBrigadeInfo();
             } else if (selectedValue && selectedValue !== "") {
-                // Режим обычной бригады
                 isSupervisorMode = false;
                 currentBrigade = selectedValue;
-                // Показываем поля скважины/месторождения, скрываем поле руководителя
                 wellFieldsContainer.style.display = 'block';
                 supervisorFieldRow.style.display = 'none';
                 if (supervisorNameInput) supervisorNameInput.value = "";
@@ -1598,8 +1678,8 @@
                 await refreshAllData();
                 await loadAllBrigadesStatsAndRender();
                 updateUIBasedOnMode();
+                saveBrigadeInfo();
             } else {
-                // Ничего не выбрано
                 isSupervisorMode = false;
                 currentBrigade = "";
                 currentWellNumber = "";
@@ -1611,11 +1691,11 @@
                 if (fieldNameInput) fieldNameInput.value = "";
                 if (supervisorNameInput) supervisorNameInput.value = "";
                 updateWellInfo();
+                saveBrigadeInfo();
             }
         });
     }
     
-    // Сохранение полей скважины и месторождения
     if (wellNumberInput) {
         wellNumberInput.addEventListener('change', async () => {
             if (isCurrentBrigadeEditable() && currentBrigade && !isSupervisorMode) {
@@ -1644,7 +1724,6 @@
         });
     }
     
-    // Сохранение фамилии руководителя
     if (supervisorNameInput) {
         supervisorNameInput.addEventListener('change', async () => {
             if (isCurrentBrigadeEditable() && isSupervisorMode) {
@@ -1657,6 +1736,7 @@
                 }
                 updateWellInfo();
                 await refreshAllData();
+                saveBrigadeInfo();
             } else if (isSupervisorMode) {
                 showToast("Нет прав для изменения данных руководителя");
                 supervisorNameInput.value = currentSupervisor;
@@ -1664,7 +1744,6 @@
         });
     }
     
-    // Кнопка Профиль наверху переключает на вкладку профиля
     if (profileNavBtn) {
         profileNavBtn.addEventListener('click', () => {
             const tabContents = {
