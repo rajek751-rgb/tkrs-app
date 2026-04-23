@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
     <link rel="apple-touch-icon" href="TKRS.png">
-    <link rel="icon" type="image/png" href="TKRS.png">
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/yourusername/yourrepo/main/TKRS.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -35,9 +35,9 @@
             --border-light: 0.5px solid rgba(0, 0, 0, 0.04);
             --icon-fill: #8e8e93;
             --nav-bg: rgba(248, 248, 250, 0.5);
-            --nav-text: #1c1c1e; /* цвет текста нижнего меню светлая тема */
             --well-info-bg: rgba(242, 242, 247, 0.5);
             --highlight-bg: rgba(255, 204, 0, 0.16);
+            --nav-text: #1c1c1e;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -60,9 +60,9 @@
                 --border-light: 0.5px solid rgba(255, 255, 255, 0.08);
                 --icon-fill: #98989d;
                 --nav-bg: rgba(28, 28, 30, 0.5);
-                --nav-text: #ffffff; /* цвет текста нижнего меню тёмная тема */
                 --well-info-bg: rgba(44, 44, 46, 0.5);
                 --highlight-bg: rgba(255, 204, 0, 0.12);
+                --nav-text: #ffffff;
             }
         }
 
@@ -101,7 +101,7 @@
             margin: 0 auto;
             position: relative;
             z-index: 2;
-            padding: 100px 16px 20px 16px; /* уменьшили боковые отступы */
+            padding: 100px 20px 20px 20px;
         }
 
         /* ========== ВЕРХНЯЯ ПАНЕЛЬ ========== */
@@ -131,9 +131,14 @@
             gap: 8px;
         }
         .logo-img {
-            height: 32px;
+            height: 40px;
             width: auto;
             object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .logo-img:hover {
+            transform: scale(1.05);
         }
         .profile-btn {
             background: var(--accent-blue);
@@ -151,6 +156,12 @@
             box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
         }
         .profile-btn:hover { background: #005bbf; transform: scale(0.98); }
+        .profile-sub {
+            font-size: 10px;
+            opacity: 0.8;
+            margin-left: 4px;
+            font-weight: normal;
+        }
 
         .right-icons { display: flex; gap: 8px; align-items: center; }
 
@@ -244,7 +255,7 @@
         .card:hover { transform: translateY(-2px); }
 
         .card-header {
-            padding: 16px 20px;
+            padding: 16px 24px;
             background: transparent;
             color: var(--text-primary);
             font-weight: 600;
@@ -259,12 +270,12 @@
         .card-header span { font-size: 22px; }
         .card-header .collapse-icon { margin-left: auto; font-size: 18px; transition: transform 0.3s; color: var(--text-tertiary); }
         .card-header.collapsed .collapse-icon { transform: rotate(-90deg); }
-        .card-content { padding: 16px 20px; transition: all 0.2s; color: var(--text-primary); }
+        .card-content { padding: 20px 24px; transition: all 0.2s; color: var(--text-primary); }
         .card-content.collapsed { display: none; }
 
         /* Таблицы */
         .compact-brigade-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .compact-brigade-table th, .compact-brigade-table td { padding: 12px 6px; text-align: left; border-bottom: 1px solid var(--separator); }
+        .compact-brigade-table th, .compact-brigade-table td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--separator); }
         .compact-brigade-table th { 
             background: transparent; 
             font-weight: 700; 
@@ -295,13 +306,13 @@
         .item-card.highlight-new { animation: highlightFlash 1.5s ease-out 2; }
 
         /* Формы */
-        .form-row { margin-bottom: 16px; }
-        label { display: block; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); font-size: 14px; }
+        .form-row { margin-bottom: 18px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px; }
         input, select, textarea {
             width: 100%;
-            padding: 10px 12px;
+            padding: 12px 14px;
             border: 1px solid var(--separator);
-            border-radius: 14px;
+            border-radius: 16px;
             font-size: 15px;
             background: var(--bg-elevated);
             backdrop-filter: blur(4px);
@@ -310,28 +321,20 @@
         }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.2); }
 
-        /* КОМПАКТНЫЙ ДАТА/ВРЕМЯ – не выступает, шрифт видимый */
+        /* КОМПАКТНЫЙ ДАТА/ВРЕМЯ – хорошо видно после ввода */
         .compact-datetime { 
             width: 100%; 
-            padding: 10px 10px; 
-            font-size: 14px; 
+            min-width: 0; 
+            padding: 10px 12px; 
+            font-size: 16px; 
+            font-weight: 600;
             background: var(--bg-elevated); 
             color: var(--text-primary); 
             border-radius: 14px; 
         }
-        .datetime-row { 
-            display: flex; 
-            gap: 10px; 
-            flex-wrap: wrap; 
-            align-items: center; 
-            margin-bottom: 8px;
-        }
-        .datetime-row .form-row {
-            flex: 1 1 160px;
-            margin-bottom: 8px;
-        }
+        .datetime-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 
-        /* Расширенные поля ввода */
+        /* Расширенные поля ввода (описание, название) */
         textarea, input[type="text"] {
             min-height: 44px;
             line-height: 1.4;
@@ -344,7 +347,7 @@
         }
 
         .btn {
-            padding: 12px 20px;
+            padding: 12px 24px;
             border-radius: 40px;
             border: none;
             font-weight: 600;
@@ -440,7 +443,7 @@
             box-shadow: var(--shadow-sm); border-left: 4px solid var(--accent-blue); backdrop-filter: blur(8px);
         }
 
-        /* НИЖНЕЕ МЕНЮ – шрифт согласно теме */
+        /* НИЖНЕЕ МЕНЮ – ШРИФТ БОЛЕЕ ВИДНЫЙ */
         .bottom-nav {
             position: fixed; bottom: 12px; left: 12px; right: 12px;
             background: var(--nav-bg); backdrop-filter: var(--blur-intensity); -webkit-backdrop-filter: var(--blur-intensity);
@@ -452,8 +455,7 @@
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none;
-            color: var(--nav-text); /* белый/черный согласно теме */
-            font-size: 12px;
+            color: var(--nav-text); font-size: 12px;
             font-weight: 600;
             cursor: pointer; transition: all 0.2s; padding: 8px 10px; border-radius: 40px;
         }
@@ -462,24 +464,69 @@
 
         @media (max-width: 600px) {
             .row-2cols { grid-template-columns: 1fr; }
-            .card-content { padding: 14px; }
+            .card-content { padding: 16px; }
             .compact-brigade-table { font-size: 11px; }
             .nav-item { font-size: 11px; }
             .nav-item span:first-child { font-size: 20px; }
             .profile-btn { padding: 6px 12px; font-size: 13px; }
             .icon-btn { width: 36px; height: 36px; font-size: 16px; }
-            .app-container { padding: 90px 12px 20px 12px; }
         }
 
         a { color: var(--accent-blue); text-decoration: none; }
         button { font-family: inherit; }
 
-        /* Логотип ТКРС в профиле */
-        .tkrs-logo-large {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            margin-bottom: 8px;
+        /* Slide-out menu */
+        .slide-menu {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 300px;
+            height: 100%;
+            background: var(--bg-elevated);
+            backdrop-filter: var(--blur-intensity);
+            z-index: 1500;
+            transition: left 0.3s;
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            border-right: var(--border-light);
+            overflow-y: auto;
+        }
+        .slide-menu.open {
+            left: 0;
+        }
+        .slide-menu .close-slide {
+            text-align: right;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-tertiary);
+        }
+        .slide-menu .menu-tab {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-right: 8px;
+            cursor: pointer;
+            border-radius: 20px;
+            background: var(--bg-secondary);
+        }
+        .slide-menu .menu-tab.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+        .slide-menu .menu-section {
+            margin-top: 20px;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1499;
+            display: none;
+        }
+        .overlay.show {
+            display: block;
         }
     </style>
 </head>
@@ -490,8 +537,8 @@
     <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
     <div class="top-header">
         <div class="header-left">
-            <img src="РН.png" alt="РН" class="logo-img" onerror="this.style.display='none'">
-            <button class="profile-btn" id="profileNavBtn">👤 Профиль</button>
+            <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/TKRS.png" alt="ТКРС" class="logo-img" id="menuToggleBtn" onerror="this.src='TKRS.png'">
+            <button class="profile-btn" id="profileNavBtn">👤 Профиль <span id="profileSub" class="profile-sub"></span></button>
         </div>
         <div class="right-icons">
             <button class="icon-btn" id="chatBtnFull">💬<span>Обсуждение</span></button>
@@ -546,11 +593,11 @@
                 <div class="card-header"><span>📊</span> Сводка выполненных работ</div>
                 <div class="card-content">
                     <div class="datetime-row">
-                        <div class="form-row">
+                        <div class="form-row" style="flex:1; min-width: 160px;">
                             <label>📅 Начало работ</label>
                             <input type="datetime-local" id="summaryStartDateTime" class="editable-field compact-datetime">
                         </div>
-                        <div class="form-row">
+                        <div class="form-row" style="flex:1; min-width: 160px;">
                             <label>⏰ Завершение работ</label>
                             <input type="datetime-local" id="summaryEndDateTime" class="editable-field compact-datetime">
                         </div>
@@ -576,24 +623,25 @@
             </div>
         </div>
 
-        <!-- План (без "+ Добавить операцию", только название) -->
-        <div id="tab-graph" class="tab-content" style="display: block;">
+        <!-- План (Сетевой график) -->
+        <div id="tab-graph" class="tab-content" style="display: none;">
             <div class="card">
-                <div class="card-header"><span>⏱️</span> План операций</div>
+                <div class="card-header"><span>⏱️</span> Сетевой график</div>
                 <div class="card-content">
                     <div class="datetime-row">
-                        <div class="form-row">
+                        <div class="form-row" style="flex:1; min-width: 160px;">
                             <label>📅 Начало</label>
                             <input type="datetime-local" id="graphStartDateTime" class="editable-field compact-datetime">
                         </div>
-                        <div class="form-row">
+                        <div class="form-row" style="flex:1; min-width: 160px;">
                             <label>⏰ Окончание</label>
                             <input type="datetime-local" id="graphEndDateTime" class="editable-field compact-datetime">
                         </div>
                     </div>
+                    <hr>
                     <div class="form-row">
                         <label>Название операции</label>
-                        <input type="text" id="opName" class="editable-field" placeholder="Подъём ЭЦН, Демонтаж...">
+                        <input type="text" id="opName" class="editable-field" placeholder="Подъём ЭЦН, Демонтаж..." style="font-size: 16px; padding: 14px;">
                     </div>
                     <div class="form-row">
                         <label>🔧 Выберите технику</label>
@@ -792,8 +840,7 @@
                     <div class="info-text">✅ Все данные видны без пароля. Для добавления/изменения данных нажмите кнопку выше и введите пароль для выбранной бригады.</div>
                     <hr>
                     <div style="text-align: center; padding: 20px;">
-                        <img src="ТКРС.png" alt="ТКРС" class="tkrs-logo-large" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <div style="font-size: 48px; display: none;">🛢️</div>
+                        <div style="font-size: 48px;">📊</div>
                         <h2>ТКРС - Сетевое планирование</h2>
                         <p style="margin-top: 16px;">Версия 2.0<br>Система управления бригадами</p>
                         <div class="info-text">© 2025 Все права защищены</div>
@@ -811,7 +858,7 @@
         <span>📊</span>
         <span>Сводка</span>
     </button>
-    <button class="nav-item active" data-nav="graph">
+    <button class="nav-item" data-nav="graph">
         <span>📈</span>
         <span>План</span>
     </button>
@@ -831,14 +878,58 @@
 
 <div id="syncStatus" class="sync-status">🔄 Загрузка...</div>
 
+<!-- Slide-out menu (ВСЯ ИНФОРМАЦИЯ ПО УЧЕТУ ПЕРЕМЕЩЕНА СЮДА) -->
+<div id="slideMenu" class="slide-menu">
+    <div class="close-slide" id="closeSlideMenu">&times;</div>
+    <div>
+        <div class="menu-tab active" data-menu-tab="equipment">📦 Оборудование</div>
+        <div class="menu-tab" data-menu-tab="fluid">💧 Тех. жидкость</div>
+        <div class="menu-tab" data-menu-tab="chemical">🧪 Хим. реагенты</div>
+    </div>
+    
+    <!-- Форма учета оборудования -->
+    <div id="menuEquipmentSection" class="menu-section">
+        <h3>Учет оборудования</h3>
+        <div class="form-row"><label>Организация</label><input type="text" id="eqOrg" class="editable-field"></div>
+        <div class="form-row"><label>Наименование оборудования</label><input type="text" id="eqName" class="editable-field"></div>
+        <div class="form-row"><label>Дата начала спуска</label><input type="datetime-local" id="eqStart" class="editable-field compact-datetime"></div>
+        <div class="form-row"><label>Дата окончания подъема</label><input type="datetime-local" id="eqEnd" class="editable-field compact-datetime"></div>
+        <div class="form-row"><label>Наработка, час</label><input type="number" id="eqHours" class="editable-field"></div>
+        <div class="form-row"><label>Примечание (эффективность)</label><textarea id="eqNote" rows="2"></textarea></div>
+        <button class="btn btn-primary" id="addEquipmentBtn">Добавить запись</button>
+        <div id="equipmentListSlide" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
+    </div>
+    
+    <!-- Форма учета технологической жидкости -->
+    <div id="menuFluidSection" class="menu-section" style="display: none;">
+        <h3>Учет технологической жидкости</h3>
+        <div class="form-row"><label>Дата</label><input type="datetime-local" id="fluidDate" class="editable-field compact-datetime"></div>
+        <div class="form-row"><label>Пункт набора ПНТЖ</label><input type="text" id="fluidPoint" class="editable-field"></div>
+        <div class="form-row"><label>Плотность жидкости, г/см³</label><input type="number" step="0.01" id="fluidDensity" class="editable-field"></div>
+        <div class="form-row"><label>Объем жидкости, м³</label><input type="number" step="0.1" id="fluidVolume" class="editable-field"></div>
+        <button class="btn btn-primary" id="addFluidBtn">Добавить запись</button>
+        <div id="fluidListSlide" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
+    </div>
+    
+    <!-- Форма учета хим. реагентов -->
+    <div id="menuChemicalSection" class="menu-section" style="display: none;">
+        <h3>Учет движения хим. реагентов</h3>
+        <div class="form-row"><label>Дата</label><input type="datetime-local" id="chemDate" class="editable-field compact-datetime"></div>
+        <div class="form-row"><label>Завоз, кг</label><input type="number" id="chemImport" class="editable-field"></div>
+        <div class="form-row"><label>Расход, кг</label><input type="number" id="chemExpense" class="editable-field"></div>
+        <div class="form-row"><label>Остаток после окончания работ, кг</label><input type="number" id="chemRemain" class="editable-field"></div>
+        <div class="form-row"><label>Наименование Хим. реагента</label><input type="text" id="chemName" class="editable-field"></div>
+        <div class="form-row"><label>Номер партии</label><input type="text" id="chemBatch" class="editable-field"></div>
+        <div class="form-row"><label>Объем, кг</label><input type="number" id="chemTotalVol" class="editable-field"></div>
+        <div class="form-row"><label>Вид выполняемой тех. операции</label><input type="text" id="chemOperation" class="editable-field"></div>
+        <div class="form-row"><label>Использовано, кг</label><input type="number" id="chemUsed" class="editable-field"></div>
+        <button class="btn btn-primary" id="addChemicalBtn">Добавить запись</button>
+        <div id="chemicalListSlide" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
+    </div>
+</div>
+<div id="overlay" class="overlay"></div>
+
 <script>
-    // ========== ПОЛНОСТЬЮ БЕЗ ИЗМЕНЕНИЙ, ИСХОДНЫЙ КОД ==========
-    // (оригинальный JS код)
-</script>
-<!-- Подключаем Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    // (оригинальный JS код, полностью без правок)
     // ========== ДАННЫЕ ПО ЗАЯВКАМ ==========
     const requestRules = {
         "Завоз / вывоз оборудования ТКРС": { подача: "24 часа", перенос1: "—", перенос2: "—", подтверждение: "12 часов", примечание: "" },
@@ -893,6 +984,48 @@
     let isSupervisorMode = false;
     let supabaseClient = null;
     
+    // Новая система учета (теперь только в выдвижном меню)
+    let accountingData = { equipment: [], fluid: [], chemical: [] };
+    
+    function loadAccountingData() {
+        const saved = localStorage.getItem('tkrs_accounting');
+        if (saved) accountingData = JSON.parse(saved);
+    }
+    function saveAccountingData() {
+        localStorage.setItem('tkrs_accounting', JSON.stringify(accountingData));
+    }
+    
+    function addAccountingRecord(type, data) {
+        if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return null; }
+        const newId = Date.now();
+        const newRecord = { id: newId, ...data, brigade: currentBrigade, well: getFullWellName(), _timestamp: new Date().toISOString() };
+        accountingData[type].unshift(newRecord);
+        saveAccountingData();
+        renderAccountingLists();
+        return newRecord;
+    }
+    
+    function renderAccountingLists() {
+        // Оборудование
+        const equipList = document.getElementById('equipmentListSlide');
+        if (equipList) {
+            if (!accountingData.equipment.length) equipList.innerHTML = '<div class="info-text">Нет записей об оборудовании</div>';
+            else equipList.innerHTML = accountingData.equipment.map(item => `<div class="item-card"><div class="item-title">📦 ${item.org} / ${item.name}</div><div>📅 Спуск: ${formatDateTime(item.start)} — Подъем: ${formatDateTime(item.end)}</div><div>⏱️ Наработка: ${item.hours} ч</div><div>📝 ${item.note || ''}</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
+        }
+        // Жидкость
+        const fluidList = document.getElementById('fluidListSlide');
+        if (fluidList) {
+            if (!accountingData.fluid.length) fluidList.innerHTML = '<div class="info-text">Нет записей о тех. жидкости</div>';
+            else fluidList.innerHTML = accountingData.fluid.map(item => `<div class="item-card"><div class="item-title">💧 ${item.point}</div><div>📅 ${formatDateTime(item.date)}</div><div>🧪 Плотность: ${item.density} г/см³ | Объем: ${item.volume} м³</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
+        }
+        // Хим. реагенты
+        const chemList = document.getElementById('chemicalListSlide');
+        if (chemList) {
+            if (!accountingData.chemical.length) chemList.innerHTML = '<div class="info-text">Нет записей о хим. реагентах</div>';
+            else chemList.innerHTML = accountingData.chemical.map(item => `<div class="item-card"><div class="item-title">🧪 ${item.name} (партия ${item.batch})</div><div>📅 ${formatDateTime(item.date)}</div><div>📥 Завоз: ${item.import} кг | 📤 Расход: ${item.expense} кг | ⚖️ Остаток: ${item.remain} кг</div><div>📊 Использовано: ${item.used} кг | Операция: ${item.operation}</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
+        }
+    }
+    
     // ========== СИСТЕМА ПАРОЛЕЙ ==========
     let unlockedBrigades = {};
     
@@ -905,15 +1038,14 @@
     }
     
     function isCurrentBrigadeEditable() {
+        if (isSupervisorMode) return unlockedBrigades['supervisor'] === true;
         return unlockedBrigades[currentBrigade] === true;
     }
     
     function setBrigadeEditable(editable) {
-        if (editable) {
-            unlockedBrigades[currentBrigade] = true;
-        } else {
-            delete unlockedBrigades[currentBrigade];
-        }
+        const key = isSupervisorMode ? 'supervisor' : currentBrigade;
+        if (editable) unlockedBrigades[key] = true;
+        else delete unlockedBrigades[key];
         saveUnlockedBrigades();
         updateUIBasedOnMode();
     }
@@ -1021,26 +1153,18 @@
     async function syncOfflineQueue() {
         if (!supabaseClient || !navigator.onLine) return;
         if (offlineQueue.length === 0) return;
-        
         showToast(`🔄 Синхронизация ${offlineQueue.length} записей...`);
         let successCount = 0;
-        
         for (let i = 0; i < offlineQueue.length; i++) {
             const item = offlineQueue[i];
             try {
-                if (item.type === 'operation') {
-                    await supabaseClient.from('operations').insert({ id: item.data.id, brigade: item.brigade, operation_data: item.data });
-                } else if (item.type === 'nsj') {
-                    await supabaseClient.from('nsj_records').insert({ id: item.data.id, brigade: item.brigade, nsj_data: item.data });
-                } else if (item.type === 'request') {
-                    await supabaseClient.from('requests').insert({ id: item.data.id, brigade: item.brigade, request_data: item.data });
-                } else if (item.type === 'summary') {
-                    await supabaseClient.from('summaries').insert({ id: item.data.id, brigade: item.brigade, summary_data: item.data });
-                }
+                if (item.type === 'operation') await supabaseClient.from('operations').insert({ id: item.data.id, brigade: item.brigade, operation_data: item.data });
+                else if (item.type === 'nsj') await supabaseClient.from('nsj_records').insert({ id: item.data.id, brigade: item.brigade, nsj_data: item.data });
+                else if (item.type === 'request') await supabaseClient.from('requests').insert({ id: item.data.id, brigade: item.brigade, request_data: item.data });
+                else if (item.type === 'summary') await supabaseClient.from('summaries').insert({ id: item.data.id, brigade: item.brigade, summary_data: item.data });
                 successCount++;
             } catch(e) { console.log('Ошибка синхронизации:', e); }
         }
-        
         if (successCount > 0) {
             offlineQueue = offlineQueue.slice(successCount);
             saveOfflineQueue();
@@ -1120,13 +1244,11 @@
         if (!supabaseClient) return;
         const requests = await loadRequests();
         const now = new Date();
-        
         for (const req of requests) {
             if (!req.deadline) continue;
             const deadline = new Date(req.deadline);
             const timeDiff = deadline - now;
             const hoursDiff = timeDiff / (1000 * 60 * 60);
-            
             if (hoursDiff > 0 && hoursDiff < 1 && !req._notified) {
                 req._notified = true;
                 addLocalItem('requests', req);
@@ -1144,26 +1266,20 @@
     
     async function saveBrigadeInfo() { 
         if (supabaseClient && isCurrentBrigadeEditable() && currentBrigade && !isSupervisorMode) {
-            await supabaseClient.from('brigades').upsert({ 
-                brigade_name: currentBrigade, 
-                well_number: currentWellNumber,
-                field_name: currentField,
-                last_active: new Date().toISOString() 
-            });
+            await supabaseClient.from('brigades').upsert({ brigade_name: currentBrigade, well_number: currentWellNumber, field_name: currentField, last_active: new Date().toISOString() });
         } else if (supabaseClient && isCurrentBrigadeEditable() && isSupervisorMode && currentSupervisor) {
-            await supabaseClient.from('supervisors').upsert({ 
-                supervisor_name: currentSupervisor,
-                last_active: new Date().toISOString() 
-            });
+            await supabaseClient.from('supervisors').upsert({ supervisor_name: currentSupervisor, last_active: new Date().toISOString() });
         }
-        localStorage.setItem('tkrs_profile', JSON.stringify({
-            brigade: currentBrigade,
-            wellNumber: currentWellNumber,
-            field: currentField,
-            supervisor: currentSupervisor,
-            isSupervisor: isSupervisorMode,
-            unlockedBrigades: unlockedBrigades
-        }));
+        localStorage.setItem('tkrs_profile', JSON.stringify({ brigade: currentBrigade, wellNumber: currentWellNumber, field: currentField, supervisor: currentSupervisor, isSupervisor: isSupervisorMode, unlockedBrigades: unlockedBrigades }));
+        updateProfileSub();
+    }
+    
+    function updateProfileSub() {
+        const subSpan = document.getElementById('profileSub');
+        if (subSpan) {
+            if (isSupervisorMode) subSpan.textContent = currentSupervisor ? `👨‍💼 ${currentSupervisor.substring(0,15)}` : "Руководитель";
+            else subSpan.textContent = currentBrigade ? `${currentBrigade.substring(0,15)}` : "";
+        }
     }
     
     async function loadBrigadeInfo() { 
@@ -1191,12 +1307,10 @@
                     document.getElementById('wellFieldsContainer').style.display = 'none';
                     document.getElementById('supervisorFieldRow').style.display = 'block';
                 }
-                if (profile.unlockedBrigades) {
-                    unlockedBrigades = profile.unlockedBrigades;
-                }
+                if (profile.unlockedBrigades) unlockedBrigades = profile.unlockedBrigades;
             } catch(e) {}
         }
-        
+        updateProfileSub();
         if (!supabaseClient || !currentBrigade || isSupervisorMode) return; 
         try { 
             const { data } = await supabaseClient.from('brigades').select('*').eq('brigade_name', currentBrigade).single(); 
@@ -1278,16 +1392,11 @@
             }
             stats.push({ brigade: br, well: '', summary: sums, plan: ops, requests: reqs, pendingNsjVolume: pendingVol.toFixed(1), lastChange: lastChange });
         }
-        stats.sort((a,b) => {
-            if (a.lastChange !== b.lastChange) return b.lastChange - a.lastChange;
-            return a.brigade.localeCompare(b.brigade);
-        });
+        stats.sort((a,b) => { if (a.lastChange !== b.lastChange) return b.lastChange - a.lastChange; return a.brigade.localeCompare(b.brigade); });
         const container = document.getElementById('allBrigadesCompact');
         if (!container) return;
         let html = '<table class="compact-brigade-table"><thead><tr><th>Бригада</th><th>Сводка</th><th>План</th><th>Заявки</th><th>НСЖ м³</th></tr></thead><tbody>';
-        stats.forEach(stat => {
-            html += `<tr class="brigade-row" data-brigade="${stat.brigade}"><td>${stat.brigade}</td><td>${stat.summary}</td><td>${stat.plan}</td><td>${stat.requests}</td><td>${stat.pendingNsjVolume}</td></tr>`;
-        });
+        stats.forEach(stat => { html += `<tr class="brigade-row" data-brigade="${stat.brigade}"><td>${stat.brigade}</td><td>${stat.summary}</td><td>${stat.plan}</td><td>${stat.requests}</td><td>${stat.pendingNsjVolume}</td></tr>`; });
         html += '</tbody></table>';
         container.innerHTML = html;
         document.querySelectorAll('.brigade-row').forEach(row => { row.addEventListener('click', () => { showBrigadeDetails(row.dataset.brigade, ''); }); });
@@ -1394,11 +1503,11 @@
         const overlay = document.createElement('div'); overlay.className = 'password-overlay'; 
         overlay.innerHTML = `<div class="password-modal"><h3>🔐 Пароль для ${isSupervisorMode ? 'режима Руководитель' : 'бригады ' + currentBrigade}</h3><input type="password" id="passwordInput" placeholder="Пароль" style="width:100%; margin:16px 0; padding:12px;"><div class="flex-btns"><button class="btn" id="cancelPassword">Отмена</button><button class="btn btn-primary" id="submitPassword">Войти</button></div></div>`; 
         document.body.appendChild(overlay); 
-        document.getElementById('submitPassword').addEventListener('click',()=>{ if(document.getElementById('passwordInput').value===EDIT_PASSWORD){ setBrigadeEditable(true); showToast(`Режим редактирования для ${isSupervisorMode ? 'руководителя' : 'бригады ' + currentBrigade} активирован`); overlay.remove(); refreshAllData(); saveBrigadeInfo(); } else { showToast('Неверный пароль'); overlay.remove(); } }); 
+        document.getElementById('submitPassword').addEventListener('click',()=>{ if(document.getElementById('passwordInput').value===EDIT_PASSWORD){ setBrigadeEditable(true); showToast(`Режим редактирования для ${isSupervisorMode ? 'руководителя' : 'бригады ' + currentBrigade} активирован`); overlay.remove(); refreshAllData(); saveBrigadeInfo(); renderAccountingLists(); } else { showToast('Неверный пароль'); overlay.remove(); } }); 
         document.getElementById('cancelPassword').addEventListener('click',()=>overlay.remove()); 
     }
     
-    async function refreshAllData() { if(isLoading) return; isLoading=true; if(currentBrigade && !isSupervisorMode) { const [ops, nsj, reqs, sums] = await Promise.all([loadOperations(), loadNsj(), loadRequests(), loadSummary()]); renderOperations(ops); renderNsjHistory(nsj); renderRequests(reqs); renderSummary(sums); } updateUIBasedOnMode(); isLoading=false; await loadAllBrigadesStatsAndRender(); }
+    async function refreshAllData() { if(isLoading) return; isLoading=true; if(currentBrigade && !isSupervisorMode) { const [ops, nsj, reqs, sums] = await Promise.all([loadOperations(), loadNsj(), loadRequests(), loadSummary()]); renderOperations(ops); renderNsjHistory(nsj); renderRequests(reqs); renderSummary(sums); } updateUIBasedOnMode(); isLoading=false; await loadAllBrigadesStatsAndRender(); renderAccountingLists(); }
     
     async function loadOperations() { 
         if(!currentBrigade || isSupervisorMode) return [];
@@ -1563,7 +1672,7 @@
         if(isCurrentBrigadeEditable()) document.querySelectorAll('[data-summary-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteSummaryFromDB(btn.dataset.summaryId); refreshAllData();})); 
     }
     
-    // Чат на весь экран
+    // Чат
     let chatMessages = [];
     function loadChat() { const saved = localStorage.getItem('tkrs_chat_messages'); if (saved) chatMessages = JSON.parse(saved); }
     function saveChat() { localStorage.setItem('tkrs_chat_messages', JSON.stringify(chatMessages)); }
@@ -1588,7 +1697,6 @@
         document.body.appendChild(modal);
         const messagesDiv = document.getElementById('chatMessagesFull');
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        
         document.getElementById('closeChatFull').addEventListener('click', () => modal.remove());
         document.getElementById('sendChatFull').addEventListener('click', () => {
             const input = document.getElementById('chatInputFull');
@@ -1681,7 +1789,6 @@
     if (brigadeSelect) {
         brigadeSelect.addEventListener('change', async () => {
             const selectedValue = brigadeSelect.value;
-            
             if (selectedValue === "supervisor") {
                 isSupervisorMode = true;
                 currentBrigade = "";
@@ -1694,13 +1801,8 @@
                 if (supabaseClient) {
                     try {
                         const { data } = await supabaseClient.from('supervisors').select('supervisor_name').order('last_active', { ascending: false }).limit(1);
-                        if (data && data.length > 0) {
-                            currentSupervisor = data[0].supervisor_name;
-                            if (supervisorNameInput) supervisorNameInput.value = currentSupervisor;
-                        } else {
-                            currentSupervisor = "";
-                            if (supervisorNameInput) supervisorNameInput.value = "";
-                        }
+                        if (data && data.length > 0) { currentSupervisor = data[0].supervisor_name; if (supervisorNameInput) supervisorNameInput.value = currentSupervisor; }
+                        else { currentSupervisor = ""; if (supervisorNameInput) supervisorNameInput.value = ""; }
                     } catch(e) {}
                 }
                 updateWellInfo();
@@ -1734,6 +1836,7 @@
                 updateWellInfo();
                 saveBrigadeInfo();
             }
+            updateProfileSub();
         });
     }
     
@@ -1769,12 +1872,7 @@
         supervisorNameInput.addEventListener('change', async () => {
             if (isCurrentBrigadeEditable() && isSupervisorMode) {
                 currentSupervisor = supervisorNameInput.value.trim();
-                if (supabaseClient) {
-                    await supabaseClient.from('supervisors').upsert({ 
-                        supervisor_name: currentSupervisor,
-                        last_active: new Date().toISOString() 
-                    });
-                }
+                if (supabaseClient) await supabaseClient.from('supervisors').upsert({ supervisor_name: currentSupervisor, last_active: new Date().toISOString() });
                 updateWellInfo();
                 await refreshAllData();
                 saveBrigadeInfo();
@@ -1782,6 +1880,7 @@
                 showToast("Нет прав для изменения данных руководителя");
                 supervisorNameInput.value = currentSupervisor;
             }
+            updateProfileSub();
         });
     }
     
@@ -1812,11 +1911,86 @@
     document.getElementById('chatBtnFull')?.addEventListener('click', showFullChat);
     document.getElementById('notifyBtnFull')?.addEventListener('click', showNotificationsModal);
     
+    // Slide-out menu handlers
+    const menuToggle = document.getElementById('menuToggleBtn');
+    const slideMenu = document.getElementById('slideMenu');
+    const overlayEl = document.getElementById('overlay');
+    const closeSlide = document.getElementById('closeSlideMenu');
+    function openMenu() { slideMenu.classList.add('open'); overlayEl.classList.add('show'); renderAccountingLists(); }
+    function closeMenu() { slideMenu.classList.remove('open'); overlayEl.classList.remove('show'); }
+    menuToggle?.addEventListener('click', openMenu);
+    closeSlide?.addEventListener('click', closeMenu);
+    overlayEl?.addEventListener('click', closeMenu);
+    
+    // Menu tabs
+    const menuTabs = document.querySelectorAll('[data-menu-tab]');
+    const sections = {
+        equipment: document.getElementById('menuEquipmentSection'),
+        fluid: document.getElementById('menuFluidSection'),
+        chemical: document.getElementById('menuChemicalSection')
+    };
+    menuTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            menuTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            Object.values(sections).forEach(s => { if (s) s.style.display = 'none'; });
+            const type = tab.dataset.menuTab;
+            if (sections[type]) sections[type].style.display = 'block';
+            renderAccountingLists();
+        });
+    });
+    
+    // Add handlers for accounting
+    document.getElementById('addEquipmentBtn')?.addEventListener('click', () => {
+        if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
+        addAccountingRecord('equipment', {
+            org: document.getElementById('eqOrg').value,
+            name: document.getElementById('eqName').value,
+            start: document.getElementById('eqStart').value,
+            end: document.getElementById('eqEnd').value,
+            hours: document.getElementById('eqHours').value,
+            note: document.getElementById('eqNote').value
+        });
+        showToast("Запись об оборудовании добавлена");
+        document.getElementById('eqOrg').value = ''; document.getElementById('eqName').value = ''; document.getElementById('eqStart').value = ''; document.getElementById('eqEnd').value = ''; document.getElementById('eqHours').value = ''; document.getElementById('eqNote').value = '';
+        renderAccountingLists();
+    });
+    document.getElementById('addFluidBtn')?.addEventListener('click', () => {
+        if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
+        addAccountingRecord('fluid', {
+            date: document.getElementById('fluidDate').value,
+            point: document.getElementById('fluidPoint').value,
+            density: document.getElementById('fluidDensity').value,
+            volume: document.getElementById('fluidVolume').value
+        });
+        showToast("Запись о тех. жидкости добавлена");
+        document.getElementById('fluidDate').value = ''; document.getElementById('fluidPoint').value = ''; document.getElementById('fluidDensity').value = ''; document.getElementById('fluidVolume').value = '';
+        renderAccountingLists();
+    });
+    document.getElementById('addChemicalBtn')?.addEventListener('click', () => {
+        if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
+        addAccountingRecord('chemical', {
+            date: document.getElementById('chemDate').value,
+            import: document.getElementById('chemImport').value,
+            expense: document.getElementById('chemExpense').value,
+            remain: document.getElementById('chemRemain').value,
+            name: document.getElementById('chemName').value,
+            batch: document.getElementById('chemBatch').value,
+            totalVol: document.getElementById('chemTotalVol').value,
+            operation: document.getElementById('chemOperation').value,
+            used: document.getElementById('chemUsed').value
+        });
+        showToast("Запись о хим. реагенте добавлена");
+        document.getElementById('chemDate').value = ''; document.getElementById('chemImport').value = ''; document.getElementById('chemExpense').value = ''; document.getElementById('chemRemain').value = ''; document.getElementById('chemName').value = ''; document.getElementById('chemBatch').value = ''; document.getElementById('chemTotalVol').value = ''; document.getElementById('chemOperation').value = ''; document.getElementById('chemUsed').value = '';
+        renderAccountingLists();
+    });
+    
     // Инициализация
     loadLocalStore();
     loadUnlockedBrigades();
     loadChat();
     loadNotifications();
+    loadAccountingData();
     initBottomNav();
     initCollapsibleCard();
     updateUIBasedOnMode();
