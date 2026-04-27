@@ -14,7 +14,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="ТКРС Планирование">
     <style>
-        /* (стили остаются без изменений) */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         :root {
@@ -105,7 +104,6 @@
             padding: 100px 20px 20px 20px;
         }
 
-        /* ========== ВЕРХНЯЯ ПАНЕЛЬ ========== */
         .top-header {
             position: fixed;
             top: 0;
@@ -205,7 +203,6 @@
             box-shadow: 0 2px 6px rgba(255, 59, 48, 0.4);
         }
 
-        /* ========== ИНФОРМАЦИЯ О БРИГАДЕ ========== */
         .well-info-badge {
             background: var(--well-info-bg);
             backdrop-filter: var(--blur-intensity);
@@ -241,7 +238,6 @@
             border-radius: 20px;
         }
 
-        /* ========== КАРТОЧКИ ========== */
         .card {
             background: var(--card-bg);
             backdrop-filter: var(--blur-intensity);
@@ -274,7 +270,6 @@
         .card-content { padding: 20px 24px; transition: all 0.2s; color: var(--text-primary); }
         .card-content.collapsed { display: none; }
 
-        /* Таблицы */
         .compact-brigade-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .compact-brigade-table th, .compact-brigade-table td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--separator); }
         .compact-brigade-table th { 
@@ -306,7 +301,6 @@
         }
         .item-card.highlight-new { animation: highlightFlash 1.5s ease-out 2; }
 
-        /* Формы */
         .form-row { margin-bottom: 18px; }
         label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px; }
         input, select, textarea {
@@ -322,20 +316,18 @@
         }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(0,122,255,0.2); }
 
-        /* КОМПАКТНЫЙ ДАТА/ВРЕМЯ – хорошо видно после ввода */
         .compact-datetime { 
             width: 100%; 
             min-width: 0; 
             padding: 10px 12px; 
-            font-size: 16px; 
-            font-weight: 600;
+            font-size: 14px; 
+            font-weight: 500;
             background: var(--bg-elevated); 
             color: var(--text-primary); 
             border-radius: 14px; 
         }
         .datetime-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 
-        /* Расширенные поля ввода (описание, название) */
         textarea, input[type="text"] {
             min-height: 44px;
             line-height: 1.4;
@@ -430,7 +422,6 @@
         .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
         .filter-bar select { width: auto; min-width: 140px; }
 
-        /* Чат */
         .chat-modal-full {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg-primary); display: flex; flex-direction: column; z-index: 4000;
@@ -444,7 +435,6 @@
             box-shadow: var(--shadow-sm); border-left: 4px solid var(--accent-blue); backdrop-filter: blur(8px);
         }
 
-        /* НИЖНЕЕ МЕНЮ – ШРИФТ БОЛЕЕ ВИДНЫЙ */
         .bottom-nav {
             position: fixed; bottom: 12px; left: 12px; right: 12px;
             background: var(--nav-bg); backdrop-filter: var(--blur-intensity); -webkit-backdrop-filter: var(--blur-intensity);
@@ -476,7 +466,6 @@
         a { color: var(--accent-blue); text-decoration: none; }
         button { font-family: inherit; }
 
-        /* Slide-out menu */
         .slide-menu {
             position: fixed;
             top: 0;
@@ -529,13 +518,33 @@
         .overlay.show {
             display: block;
         }
+        
+        .accounting-tab {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-right: 8px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            background: var(--bg-secondary);
+            font-size: 13px;
+        }
+        .accounting-tab.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+        .accounting-section {
+            display: none;
+        }
+        .accounting-section.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     
-    <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
     <div class="top-header">
         <div class="header-left">
             <img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/TKRS.png" alt="ТКРС" class="logo-img" id="menuToggleBtn" onerror="this.src='TKRS.png'">
@@ -550,10 +559,8 @@
         </div>
     </div>
     
-    <!-- ИНФОРМАЦИЯ О БРИГАДЕ -->
     <div id="currentWellInfo" class="well-info-badge"></div>
     
-    <!-- БЛОК ВСЕ БРИГАДЫ -->
     <div class="card" id="allBrigadesCard">
         <div class="card-header" id="allBrigadesHeader">
             <span>🏢</span> Все бригады
@@ -563,6 +570,7 @@
             <div class="brigade-detail-tabs" style="margin-top: 0; margin-bottom: 16px;">
                 <div class="detail-tab active" data-brigade-tab="stats">📊 Статистика бригад</div>
                 <div class="detail-tab" data-brigade-tab="nsjAll">💧 Сводка НСЖ (невывоз)</div>
+                <div class="detail-tab" data-brigade-tab="accounting">📦 Учет</div>
             </div>
             <div id="brigadeStatsPanel">
                 <div id="allBrigadesCompact"></div>
@@ -583,12 +591,48 @@
                 </div>
                 <div id="allNsjPendingList" class="items-list" style="max-height: 400px;"></div>
             </div>
+            <div id="accountingPanel" style="display: none;">
+                <div>
+                    <div class="accounting-tab active" data-acc-tab="equipment">📦 Оборудование</div>
+                    <div class="accounting-tab" data-acc-tab="fluid">💧 Тех. жидкость</div>
+                    <div class="accounting-tab" data-acc-tab="chemical">🧪 Хим. реагенты</div>
+                </div>
+                <div id="equipmentSection" class="accounting-section active">
+                    <div class="form-row"><label>Организация</label><input type="text" id="eqOrg" class="editable-field" placeholder="Наименование организации"></div>
+                    <div class="form-row"><label>Наименование оборудования</label><input type="text" id="eqName" class="editable-field" placeholder="Оборудование"></div>
+                    <div class="form-row"><label>Дата начала спуска</label><input type="datetime-local" id="eqStart" class="editable-field compact-datetime"></div>
+                    <div class="form-row"><label>Дата окончания подъема</label><input type="datetime-local" id="eqEnd" class="editable-field compact-datetime"></div>
+                    <div class="form-row"><label>Наработка, час</label><input type="number" id="eqHours" class="editable-field" placeholder="Часы"></div>
+                    <div class="form-row"><label>Примечание (эффективность)</label><textarea id="eqNote" rows="2" placeholder="Примечание"></textarea></div>
+                    <button class="btn btn-primary" id="addEquipmentBtn">➕ Добавить запись</button>
+                    <div id="equipmentListPanel" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
+                </div>
+                <div id="fluidSection" class="accounting-section">
+                    <div class="form-row"><label>Дата</label><input type="datetime-local" id="fluidDate" class="editable-field compact-datetime"></div>
+                    <div class="form-row"><label>Пункт набора ПНТЖ</label><input type="text" id="fluidPoint" class="editable-field" placeholder="Пункт набора"></div>
+                    <div class="form-row"><label>Плотность жидкости, г/см³</label><input type="number" step="0.01" id="fluidDensity" class="editable-field" placeholder="Плотность"></div>
+                    <div class="form-row"><label>Объем жидкости, м³</label><input type="number" step="0.1" id="fluidVolume" class="editable-field" placeholder="Объем"></div>
+                    <button class="btn btn-primary" id="addFluidBtn">➕ Добавить запись</button>
+                    <div id="fluidListPanel" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
+                </div>
+                <div id="chemicalSection" class="accounting-section">
+                    <div class="form-row"><label>Дата</label><input type="datetime-local" id="chemDate" class="editable-field compact-datetime"></div>
+                    <div class="form-row"><label>Завоз, кг</label><input type="number" id="chemImport" class="editable-field" placeholder="Завоз"></div>
+                    <div class="form-row"><label>Расход, кг</label><input type="number" id="chemExpense" class="editable-field" placeholder="Расход"></div>
+                    <div class="form-row"><label>Остаток после окончания работ, кг</label><input type="number" id="chemRemain" class="editable-field" placeholder="Остаток"></div>
+                    <div class="form-row"><label>Наименование Хим. реагента</label><input type="text" id="chemName" class="editable-field" placeholder="Наименование"></div>
+                    <div class="form-row"><label>Номер партии</label><input type="text" id="chemBatch" class="editable-field" placeholder="Партия"></div>
+                    <div class="form-row"><label>Объем, кг</label><input type="number" id="chemTotalVol" class="editable-field" placeholder="Объем"></div>
+                    <div class="form-row"><label>Вид выполняемой тех. операции</label><input type="text" id="chemOperation" class="editable-field" placeholder="Операция"></div>
+                    <div class="form-row"><label>Использовано, кг</label><input type="number" id="chemUsed" class="editable-field" placeholder="Использовано"></div>
+                    <button class="btn btn-primary" id="addChemicalBtn">➕ Добавить запись</button>
+                    <div id="chemicalListPanel" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- КОНТЕНТ ВКЛАДОК -->
     <div id="mainMenu">
-        <!-- Сводка -->
         <div id="tab-summary" class="tab-content" style="display: none;">
             <div class="card">
                 <div class="card-header"><span>📊</span> Сводка выполненных работ</div>
@@ -624,7 +668,6 @@
             </div>
         </div>
 
-        <!-- План (Сетевой график) -->
         <div id="tab-graph" class="tab-content" style="display: none;">
             <div class="card">
                 <div class="card-header"><span>⏱️</span> Сетевой график</div>
@@ -678,7 +721,6 @@
             </div>
         </div>
 
-        <!-- НСЖ -->
         <div id="tab-nsj" class="tab-content" style="display: none;">
             <div class="card">
                 <div class="card-header"><span>💧</span> НСЖ (нефть, жидкость, АСПО, вывоз)</div>
@@ -714,7 +756,6 @@
             </div>
         </div>
 
-        <!-- Заявки -->
         <div id="tab-requests" class="tab-content" style="display: none;">
             <div class="card">
                 <div class="card-header"><span>📄</span> Заявки по договорам</div>
@@ -769,7 +810,6 @@
             </div>
         </div>
         
-        <!-- Профиль -->
         <div id="tab-profile" class="tab-content" style="display: none;">
             <div class="card">
                 <div class="card-header"><span>👤</span> Профиль</div>
@@ -853,7 +893,6 @@
     
 </div>
 
-<!-- НИЖНЕЕ МЕНЮ -->
 <div class="bottom-nav">
     <button class="nav-item" data-nav="summary">
         <span>📊</span>
@@ -878,54 +917,6 @@
 </div>
 
 <div id="syncStatus" class="sync-status">🔄 Загрузка...</div>
-
-<!-- Slide-out menu -->
-<div id="slideMenu" class="slide-menu">
-    <div class="close-slide" id="closeSlideMenu">&times;</div>
-    <div>
-        <div class="menu-tab active" data-menu-tab="equipment">📦 Оборудование</div>
-        <div class="menu-tab" data-menu-tab="fluid">💧 Тех. жидкость</div>
-        <div class="menu-tab" data-menu-tab="chemical">🧪 Хим. реагенты</div>
-    </div>
-    
-    <div id="menuEquipmentSection" class="menu-section">
-        <h3>Учет оборудования</h3>
-        <div class="form-row"><label>Организация</label><input type="text" id="eqOrg" class="editable-field"></div>
-        <div class="form-row"><label>Наименование оборудования</label><input type="text" id="eqName" class="editable-field"></div>
-        <div class="form-row"><label>Дата начала спуска</label><input type="datetime-local" id="eqStart" class="editable-field compact-datetime"></div>
-        <div class="form-row"><label>Дата окончания подъема</label><input type="datetime-local" id="eqEnd" class="editable-field compact-datetime"></div>
-        <div class="form-row"><label>Наработка, час</label><input type="number" id="eqHours" class="editable-field"></div>
-        <div class="form-row"><label>Примечание (эффективность)</label><textarea id="eqNote" rows="2"></textarea></div>
-        <button class="btn btn-primary" id="addEquipmentBtn">Добавить запись</button>
-        <div id="equipmentListSlide" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
-    </div>
-    
-    <div id="menuFluidSection" class="menu-section" style="display: none;">
-        <h3>Учет технологической жидкости</h3>
-        <div class="form-row"><label>Дата</label><input type="datetime-local" id="fluidDate" class="editable-field compact-datetime"></div>
-        <div class="form-row"><label>Пункт набора ПНТЖ</label><input type="text" id="fluidPoint" class="editable-field"></div>
-        <div class="form-row"><label>Плотность жидкости, г/см³</label><input type="number" step="0.01" id="fluidDensity" class="editable-field"></div>
-        <div class="form-row"><label>Объем жидкости, м³</label><input type="number" step="0.1" id="fluidVolume" class="editable-field"></div>
-        <button class="btn btn-primary" id="addFluidBtn">Добавить запись</button>
-        <div id="fluidListSlide" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
-    </div>
-    
-    <div id="menuChemicalSection" class="menu-section" style="display: none;">
-        <h3>Учет движения хим. реагентов</h3>
-        <div class="form-row"><label>Дата</label><input type="datetime-local" id="chemDate" class="editable-field compact-datetime"></div>
-        <div class="form-row"><label>Завоз, кг</label><input type="number" id="chemImport" class="editable-field"></div>
-        <div class="form-row"><label>Расход, кг</label><input type="number" id="chemExpense" class="editable-field"></div>
-        <div class="form-row"><label>Остаток после окончания работ, кг</label><input type="number" id="chemRemain" class="editable-field"></div>
-        <div class="form-row"><label>Наименование Хим. реагента</label><input type="text" id="chemName" class="editable-field"></div>
-        <div class="form-row"><label>Номер партии</label><input type="text" id="chemBatch" class="editable-field"></div>
-        <div class="form-row"><label>Объем, кг</label><input type="number" id="chemTotalVol" class="editable-field"></div>
-        <div class="form-row"><label>Вид выполняемой тех. операции</label><input type="text" id="chemOperation" class="editable-field"></div>
-        <div class="form-row"><label>Использовано, кг</label><input type="number" id="chemUsed" class="editable-field"></div>
-        <button class="btn btn-primary" id="addChemicalBtn">Добавить запись</button>
-        <div id="chemicalListSlide" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
-    </div>
-</div>
-<div id="overlay" class="overlay"></div>
 
 <script>
     // ========== ДАННЫЕ ПО ЗАЯВКАМ ==========
@@ -969,8 +960,8 @@
     }
 
     // ========== SUPABASE КОНФИГ ==========
-    const SUPABASE_URL = 'https://cilkfftdlfchezzqogyb.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_g0RX1ld7pcZ_hplw1c1aaQ_xvT1GeQS';
+    const SUPABASE_URL = 'https://rvwqkcljwwwstrgwound.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_Sv1P7c7hO2hifSkSCe6G9Q_HkMjxv-0';
     const EDIT_PASSWORD = "tkrs2026";
     
     let cache = {};
@@ -983,7 +974,6 @@
     let supabaseClient = null;
     let lastActivityTime = Date.now();
     
-    // Новая система учета
     let accountingData = { equipment: [], fluid: [], chemical: [] };
     
     function loadAccountingData() {
@@ -1005,24 +995,23 @@
     }
     
     function renderAccountingLists() {
-        const equipList = document.getElementById('equipmentListSlide');
+        const equipList = document.getElementById('equipmentListPanel');
         if (equipList) {
             if (!accountingData.equipment.length) equipList.innerHTML = '<div class="info-text">Нет записей об оборудовании</div>';
             else equipList.innerHTML = accountingData.equipment.map(item => `<div class="item-card"><div class="item-title">📦 ${item.org} / ${item.name}</div><div>📅 Спуск: ${formatDateTime(item.start)} — Подъем: ${formatDateTime(item.end)}</div><div>⏱️ Наработка: ${item.hours} ч</div><div>📝 ${item.note || ''}</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
         }
-        const fluidList = document.getElementById('fluidListSlide');
+        const fluidList = document.getElementById('fluidListPanel');
         if (fluidList) {
             if (!accountingData.fluid.length) fluidList.innerHTML = '<div class="info-text">Нет записей о тех. жидкости</div>';
             else fluidList.innerHTML = accountingData.fluid.map(item => `<div class="item-card"><div class="item-title">💧 ${item.point}</div><div>📅 ${formatDateTime(item.date)}</div><div>🧪 Плотность: ${item.density} г/см³ | Объем: ${item.volume} м³</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
         }
-        const chemList = document.getElementById('chemicalListSlide');
+        const chemList = document.getElementById('chemicalListPanel');
         if (chemList) {
             if (!accountingData.chemical.length) chemList.innerHTML = '<div class="info-text">Нет записей о хим. реагентах</div>';
             else chemList.innerHTML = accountingData.chemical.map(item => `<div class="item-card"><div class="item-title">🧪 ${item.name} (партия ${item.batch})</div><div>📅 ${formatDateTime(item.date)}</div><div>📥 Завоз: ${item.import} кг | 📤 Расход: ${item.expense} кг | ⚖️ Остаток: ${item.remain} кг</div><div>📊 Использовано: ${item.used} кг | Операция: ${item.operation}</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
         }
     }
     
-    // ========== СИСТЕМА ПАРОЛЕЙ ==========
     let unlockedBrigades = {};
     
     function loadUnlockedBrigades() {
@@ -1046,7 +1035,6 @@
         updateUIBasedOnMode();
     }
     
-    // ========== УВЕДОМЛЕНИЯ ==========
     let notificationsList = [];
     let notificationCount = 0;
     
@@ -1124,7 +1112,6 @@
         setTimeout(() => toast.remove(), 3000);
     }
     
-    // ========== ОФЛАЙН-СИНХРОНИЗАЦИЯ ==========
     let offlineQueue = [];
     
     function loadOfflineQueue() {
@@ -1154,10 +1141,10 @@
         for (let i = 0; i < offlineQueue.length; i++) {
             const item = offlineQueue[i];
             try {
-                if (item.type === 'operation') await supabaseClient.from('operations').insert({ id: item.data.id, brigade: item.brigade, operation_data: item.data });
-                else if (item.type === 'nsj') await supabaseClient.from('nsj_records').insert({ id: item.data.id, brigade: item.brigade, nsj_data: item.data });
-                else if (item.type === 'request') await supabaseClient.from('requests').insert({ id: item.data.id, brigade: item.brigade, request_data: item.data });
-                else if (item.type === 'summary') await supabaseClient.from('summaries').insert({ id: item.data.id, brigade: item.brigade, summary_data: item.data });
+                if (item.type === 'operation') await supabaseClient.from('operations').insert({ id: item.data.id, brigade_name: item.brigade, operation_data: item.data, created_at: item.data._timestamp });
+                else if (item.type === 'nsj') await supabaseClient.from('nsj_records').insert({ id: item.data.id, brigade_name: item.brigade, nsj_data: item.data, created_at: item.data._timestamp });
+                else if (item.type === 'request') await supabaseClient.from('requests').insert({ id: item.data.id, brigade_name: item.brigade, request_data: item.data, created_at: item.data._timestamp });
+                else if (item.type === 'summary') await supabaseClient.from('summaries').insert({ id: item.data.id, brigade_name: item.brigade, summary_data: item.data, created_at: item.data._timestamp });
                 successCount++;
             } catch(e) { console.log('Ошибка синхронизации:', e); }
         }
@@ -1174,11 +1161,10 @@
         syncOfflineQueue();
     });
     
-    // ========== ФУНКЦИИ ==========
     function formatDateTime(dt) { 
         if (!dt) return '—'; 
         const d = new Date(dt); 
-        return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; 
+        return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; 
     }
     
     function smartDateTimeRange(startDt, endDt) {
@@ -1186,7 +1172,7 @@
         const startDate = new Date(startDt);
         const endDate = endDt ? new Date(endDt) : null;
         const formatTime = (d) => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-        const formatFull = (d) => `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}г ${formatTime(d)}`;
+        const formatFull = (d) => `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()} ${formatTime(d)}`;
         if (!endDate) return formatFull(startDate);
         const isSameDay = startDate.toDateString() === endDate.toDateString();
         if (isSameDay) return `${formatFull(startDate)} — ${formatTime(endDate)}`;
@@ -1204,16 +1190,10 @@
         }
     }
     
-    // ========== АВТОМАТИЧЕСКОЕ ВОССТАНОВЛЕНИЕ SUPABASE КЛИЕНТА ==========
-    // Функция для проверки и восстановления клиента Supabase
     async function reviveSupabaseClient() {
         if (!supabaseClient) return false;
-        
         try {
-            // Проверяем, жив ли клиент - делаем простой запрос
-            const { data, error } = await supabaseClient.from('brigades').select('count', { count: 'exact', head: true }).limit(1);
-            
-            // Если ошибка или клиент не отвечает, пересоздаем его
+            const { error } = await supabaseClient.from('brigades').select('count', { count: 'exact', head: true }).limit(1);
             if (error && (error.message?.includes('JWT') || error.message?.includes('session') || error.message?.includes('connection'))) {
                 console.log('Supabase client seems stale, recreating...');
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1233,39 +1213,27 @@
         }
     }
     
-    // Обработчик видимости страницы - "пробуждение" приложения
     function setupVisibilityHandler() {
         document.addEventListener('visibilitychange', async () => {
             if (document.visibilityState === 'visible') {
                 const timeAway = Date.now() - lastActivityTime;
                 console.log(`User returned after ${Math.floor(timeAway / 1000)} seconds`);
                 lastActivityTime = Date.now();
-                
-                // Пользователь вернулся в приложение
                 if (supabaseClient) {
                     await reviveSupabaseClient();
                 }
-                
-                // Обновляем данные
                 await refreshAllData();
                 await loadAllBrigadesStatsAndRender();
-                
-                // Проверяем дедлайны заявок
                 await checkRequestDeadlines();
-                
                 showToast('🔄 Данные обновлены');
             }
         });
-        
-        // Также отслеживаем активность пользователя (клики, скролл)
         const activityEvents = ['click', 'scroll', 'keydown', 'touchstart'];
         activityEvents.forEach(event => {
             document.addEventListener(event, () => {
                 lastActivityTime = Date.now();
             });
         });
-        
-        // Периодическая проверка каждые 5 минут (даже если вкладка активна)
         setInterval(async () => {
             if (document.visibilityState === 'visible' && supabaseClient) {
                 await reviveSupabaseClient();
@@ -1282,7 +1250,7 @@
             await loadAllBrigadesStatsAndRender();
             await syncOfflineQueue();
             startNotificationChecker();
-            setupVisibilityHandler(); // Запускаем обработчик "пробуждения"
+            setupVisibilityHandler();
             return true;
         }
         return false;
@@ -1477,10 +1445,10 @@
         if(supabaseClient && navigator.onLine) {
             try {
                 const [opsData, nsjData, reqData, sumData] = await Promise.all([
-                    supabaseClient.from('operations').select('operation_data').eq('brigade', brigadeName).order('created_at', { ascending: false }).limit(50),
-                    supabaseClient.from('nsj_records').select('nsj_data').eq('brigade', brigadeName).order('created_at', { ascending: false }).limit(50),
-                    supabaseClient.from('requests').select('request_data').eq('brigade', brigadeName).order('created_at', { ascending: false }).limit(50),
-                    supabaseClient.from('summaries').select('summary_data').eq('brigade', brigadeName).order('created_at', { ascending: false }).limit(50)
+                    supabaseClient.from('operations').select('operation_data').eq('brigade_name', brigadeName).order('created_at', { ascending: false }).limit(50),
+                    supabaseClient.from('nsj_records').select('nsj_data').eq('brigade_name', brigadeName).order('created_at', { ascending: false }).limit(50),
+                    supabaseClient.from('requests').select('request_data').eq('brigade_name', brigadeName).order('created_at', { ascending: false }).limit(50),
+                    supabaseClient.from('summaries').select('summary_data').eq('brigade_name', brigadeName).order('created_at', { ascending: false }).limit(50)
                 ]);
                 if(opsData.data) operations = opsData.data.map(r => r.operation_data);
                 if(nsjData.data) nsj = nsjData.data.map(r => r.nsj_data);
@@ -1531,7 +1499,7 @@
         for (let br of brigades) {
             let items = getLocalItemsForBrigade('nsj', br);
             if (supabaseClient && navigator.onLine) {
-                try { const { data } = await supabaseClient.from('nsj_records').select('nsj_data').eq('brigade', br); if (data && data.length) items = data.map(r => r.nsj_data); } catch(e) {}
+                try { const { data } = await supabaseClient.from('nsj_records').select('nsj_data').eq('brigade_name', br); if (data && data.length) items = data.map(r => r.nsj_data); } catch(e) {}
             }
             items.filter(i => i.completed !== true).forEach(i => { if (filter === 'all' || i.type === filter) { all.push({ brigade: br, well: i.wellNumber || i.well || '—', volume: i.volume, datetime: i.datetime, cdng: i.type, _timestamp: i._timestamp }); } });
         }
@@ -1543,12 +1511,32 @@
     function setupBrigadeTabs() {
         const statsTab = document.querySelector('[data-brigade-tab="stats"]');
         const nsjTab = document.querySelector('[data-brigade-tab="nsjAll"]');
+        const accountingTab = document.querySelector('[data-brigade-tab="accounting"]');
         const statsPanel = document.getElementById('brigadeStatsPanel');
         const nsjPanel = document.getElementById('nsjAllPanel');
-        if (statsTab && nsjTab) {
-            statsTab.addEventListener('click', () => { statsTab.classList.add('active'); nsjTab.classList.remove('active'); statsPanel.style.display = 'block'; nsjPanel.style.display = 'none'; });
-            nsjTab.addEventListener('click', async () => { nsjTab.classList.add('active'); statsTab.classList.remove('active'); statsPanel.style.display = 'none'; nsjPanel.style.display = 'block'; await renderNsjAllPanel(); });
+        const accountingPanel = document.getElementById('accountingPanel');
+        if (statsTab && nsjTab && accountingTab) {
+            statsTab.addEventListener('click', () => { statsTab.classList.add('active'); nsjTab.classList.remove('active'); accountingTab.classList.remove('active'); statsPanel.style.display = 'block'; nsjPanel.style.display = 'none'; accountingPanel.style.display = 'none'; });
+            nsjTab.addEventListener('click', async () => { nsjTab.classList.add('active'); statsTab.classList.remove('active'); accountingTab.classList.remove('active'); statsPanel.style.display = 'none'; nsjPanel.style.display = 'block'; accountingPanel.style.display = 'none'; await renderNsjAllPanel(); });
+            accountingTab.addEventListener('click', () => { accountingTab.classList.add('active'); statsTab.classList.remove('active'); nsjTab.classList.remove('active'); statsPanel.style.display = 'none'; nsjPanel.style.display = 'none'; accountingPanel.style.display = 'block'; renderAccountingLists(); });
         }
+        
+        const accTabs = document.querySelectorAll('[data-acc-tab]');
+        const sections = {
+            equipment: document.getElementById('equipmentSection'),
+            fluid: document.getElementById('fluidSection'),
+            chemical: document.getElementById('chemicalSection')
+        };
+        accTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                accTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                Object.values(sections).forEach(s => { if (s) s.classList.remove('active'); });
+                const type = tab.dataset.accTab;
+                if (sections[type]) sections[type].classList.add('active');
+                renderAccountingLists();
+            });
+        });
     }
     
     function updateUIBasedOnMode() {
@@ -1580,7 +1568,7 @@
         if(!currentBrigade || isSupervisorMode) return [];
         if(!supabaseClient || !navigator.onLine) return getLocalItems('operations'); 
         try { 
-            const {data}=await supabaseClient.from('operations').select('operation_data').eq('brigade',currentBrigade).order('created_at',{ascending:false}); 
+            const {data}=await supabaseClient.from('operations').select('operation_data').eq('brigade_name',currentBrigade).order('created_at',{ascending:false}); 
             const items=data?.map(r=>r.operation_data)||[]; 
             items.forEach(i=>addLocalItem('operations',i)); 
             return items.sort((a,b) => (b._timestamp || 0) - (a._timestamp || 0));
@@ -1593,20 +1581,20 @@
         addLocalItem('operations', newOp); 
         if (!navigator.onLine) { addToOfflineQueue('operation', newOp); highlightNewItem('operationsList', newId); updateBrigadeLastChange(currentBrigade); return newOp; }
         try {
-            await supabaseClient.from('operations').insert({ id: newId, brigade: currentBrigade, operation_data: newOp, created_at: newOp._timestamp }); 
+            await supabaseClient.from('operations').insert({ id: newId, brigade_name: currentBrigade, operation_data: newOp, created_at: newOp._timestamp }); 
             cache[`operations_${currentBrigade}`]=null; 
             highlightNewItem('operationsList', newId);
             updateBrigadeLastChange(currentBrigade);
             return newOp;
         } catch(e) { addToOfflineQueue('operation', newOp); highlightNewItem('operationsList', newId); updateBrigadeLastChange(currentBrigade); return newOp; }
     }
-    async function deleteOperationFromDB(id) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } deleteLocalItem('operations',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('operations').delete().eq('brigade', currentBrigade).eq('operation_data->>id', id.toString()); cache[`operations_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); return true; }
+    async function deleteOperationFromDB(id) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } deleteLocalItem('operations',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('operations').delete().eq('brigade_name', currentBrigade).eq('operation_data->>id', id.toString()); cache[`operations_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); return true; }
     
     async function loadNsj() { 
         if(!currentBrigade || isSupervisorMode) return [];
         if(!supabaseClient || !navigator.onLine) return getLocalItems('nsj'); 
         try { 
-            const {data}=await supabaseClient.from('nsj_records').select('nsj_data').eq('brigade',currentBrigade).order('created_at',{ascending:false}); 
+            const {data}=await supabaseClient.from('nsj_records').select('nsj_data').eq('brigade_name',currentBrigade).order('created_at',{ascending:false}); 
             const items=data?.map(r=>r.nsj_data)||[]; 
             items.forEach(i=>addLocalItem('nsj',i)); 
             return items.sort((a,b) => (b._timestamp || 0) - (a._timestamp || 0));
@@ -1619,22 +1607,22 @@
         addLocalItem('nsj', newRec); 
         if (!navigator.onLine) { addToOfflineQueue('nsj', newRec); highlightNewItem('nsjHistoryList', newId); updateBrigadeLastChange(currentBrigade); return newRec; }
         try {
-            await supabaseClient.from('nsj_records').insert({ id: newId, brigade: currentBrigade, nsj_data: newRec, created_at: newRec._timestamp }); 
+            await supabaseClient.from('nsj_records').insert({ id: newId, brigade_name: currentBrigade, nsj_data: newRec, created_at: newRec._timestamp }); 
             cache[`nsj_${currentBrigade}`]=null; 
             highlightNewItem('nsjHistoryList', newId);
             updateBrigadeLastChange(currentBrigade);
             return newRec;
         } catch(e) { addToOfflineQueue('nsj', newRec); highlightNewItem('nsjHistoryList', newId); updateBrigadeLastChange(currentBrigade); return newRec; }
     }
-    async function updateNsjStatus(id, completed) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } const items=getLocalItems('nsj'); const item=items.find(i=>i.id==id); if(item){ item.completed=completed; addLocalItem('nsj',item); if(navigator.onLine) await supabaseClient.from('nsj_records').update({ nsj_data: item }).eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); } return true; }
-    async function updateNsjVolume(id, volume) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } const items=getLocalItems('nsj'); const item=items.find(i=>i.id==id); if(item){ item.volume=volume; addLocalItem('nsj',item); if(navigator.onLine) await supabaseClient.from('nsj_records').update({ nsj_data: item }).eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); } return true; }
-    async function deleteNsjFromDB(id) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } deleteLocalItem('nsj',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('nsj_records').delete().eq('brigade', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); return true; }
+    async function updateNsjStatus(id, completed) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } const items=getLocalItems('nsj'); const item=items.find(i=>i.id==id); if(item){ item.completed=completed; addLocalItem('nsj',item); if(navigator.onLine) await supabaseClient.from('nsj_records').update({ nsj_data: item }).eq('brigade_name', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); } return true; }
+    async function updateNsjVolume(id, volume) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } const items=getLocalItems('nsj'); const item=items.find(i=>i.id==id); if(item){ item.volume=volume; addLocalItem('nsj',item); if(navigator.onLine) await supabaseClient.from('nsj_records').update({ nsj_data: item }).eq('brigade_name', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); } return true; }
+    async function deleteNsjFromDB(id) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } deleteLocalItem('nsj',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('nsj_records').delete().eq('brigade_name', currentBrigade).eq('nsj_data->>id', id.toString()); cache[`nsj_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); return true; }
     
     async function loadRequests() { 
         if(!currentBrigade || isSupervisorMode) return [];
         if(!supabaseClient || !navigator.onLine) return getLocalItems('requests'); 
         try { 
-            const {data}=await supabaseClient.from('requests').select('request_data').eq('brigade',currentBrigade).order('created_at',{ascending:false}); 
+            const {data}=await supabaseClient.from('requests').select('request_data').eq('brigade_name',currentBrigade).order('created_at',{ascending:false}); 
             const items=data?.map(r=>r.request_data)||[]; 
             items.forEach(i=>addLocalItem('requests',i)); 
             return items.sort((a,b) => (b._timestamp || 0) - (a._timestamp || 0));
@@ -1647,20 +1635,20 @@
         addLocalItem('requests', newReq); 
         if (!navigator.onLine) { addToOfflineQueue('request', newReq); highlightNewItem('requestsList', newId); updateBrigadeLastChange(currentBrigade); return newReq; }
         try {
-            await supabaseClient.from('requests').insert({ id: newId, brigade: currentBrigade, request_data: newReq, created_at: newReq._timestamp }); 
+            await supabaseClient.from('requests').insert({ id: newId, brigade_name: currentBrigade, request_data: newReq, created_at: newReq._timestamp }); 
             cache[`requests_${currentBrigade}`]=null; 
             highlightNewItem('requestsList', newId);
             updateBrigadeLastChange(currentBrigade);
             return newReq;
         } catch(e) { addToOfflineQueue('request', newReq); highlightNewItem('requestsList', newId); updateBrigadeLastChange(currentBrigade); return newReq; }
     }
-    async function deleteRequestFromDB(id) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } deleteLocalItem('requests',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('requests').delete().eq('brigade', currentBrigade).eq('request_data->>id', id.toString()); cache[`requests_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); return true; }
+    async function deleteRequestFromDB(id) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } deleteLocalItem('requests',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('requests').delete().eq('brigade_name', currentBrigade).eq('request_data->>id', id.toString()); cache[`requests_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); return true; }
     
     async function loadSummary() { 
         if(!currentBrigade || isSupervisorMode) return [];
         if(!supabaseClient || !navigator.onLine) return getLocalItems('summaries'); 
         try { 
-            const {data}=await supabaseClient.from('summaries').select('summary_data').eq('brigade',currentBrigade).order('created_at',{ascending:false}); 
+            const {data}=await supabaseClient.from('summaries').select('summary_data').eq('brigade_name',currentBrigade).order('created_at',{ascending:false}); 
             const items=data?.map(r=>r.summary_data)||[]; 
             items.forEach(i=>addLocalItem('summaries',i)); 
             return items.sort((a,b) => (b._timestamp || 0) - (a._timestamp || 0));
@@ -1673,14 +1661,14 @@
         addLocalItem('summaries', newSum); 
         if (!navigator.onLine) { addToOfflineQueue('summary', newSum); highlightNewItem('summaryList', newId); updateBrigadeLastChange(currentBrigade); return newSum; }
         try {
-            await supabaseClient.from('summaries').insert({ id: newId, brigade: currentBrigade, summary_data: newSum, created_at: newSum._timestamp }); 
+            await supabaseClient.from('summaries').insert({ id: newId, brigade_name: currentBrigade, summary_data: newSum, created_at: newSum._timestamp }); 
             cache[`summary_${currentBrigade}`]=null; 
             highlightNewItem('summaryList', newId);
             updateBrigadeLastChange(currentBrigade);
             return newSum;
         } catch(e) { addToOfflineQueue('summary', newSum); highlightNewItem('summaryList', newId); updateBrigadeLastChange(currentBrigade); return newSum; }
     }
-    async function deleteSummaryFromDB(id) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } deleteLocalItem('summaries',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('summaries').delete().eq('brigade', currentBrigade).eq('summary_data->>id', id.toString()); cache[`summary_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); return true; }
+    async function deleteSummaryFromDB(id) { if (!isCurrentBrigadeEditable()) { showToast("Нет прав"); return false; } deleteLocalItem('summaries',id); if(supabaseClient && navigator.onLine) await supabaseClient.from('summaries').delete().eq('brigade_name', currentBrigade).eq('summary_data->>id', id.toString()); cache[`summary_${currentBrigade}`]=null; updateBrigadeLastChange(currentBrigade); return true; }
     
     function highlightNewItem(containerId, itemId) {
         setTimeout(() => {
@@ -1739,7 +1727,6 @@
         if(isCurrentBrigadeEditable()) document.querySelectorAll('[data-summary-id]').forEach(btn=>btn.addEventListener('click',async(e)=>{e.stopPropagation(); await deleteSummaryFromDB(btn.dataset.summaryId); refreshAllData();})); 
     }
     
-    // Чат
     let chatMessages = [];
     function loadChat() { const saved = localStorage.getItem('tkrs_chat_messages'); if (saved) chatMessages = JSON.parse(saved); }
     function saveChat() { localStorage.setItem('tkrs_chat_messages', JSON.stringify(chatMessages)); }
@@ -1778,7 +1765,6 @@
         modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
     }
     
-    // Навигация
     function initBottomNav() {
         const navItems = document.querySelectorAll('.nav-item');
         const tabContents = {
@@ -1798,7 +1784,6 @@
         showTab('graph');
     }
     
-    // Файловая галерея
     let uploadedFiles = [];
     const fileInput = document.getElementById('fileInput');
     const fileUploadBtn = document.getElementById('fileUploadBtn');
@@ -1844,7 +1829,6 @@
         }
     }
     
-    // Обработчики для профиля
     const brigadeSelect = document.getElementById('brigadeSelect');
     const wellNumberInput = document.getElementById('wellNumber');
     const fieldNameInput = document.getElementById('fieldName');
@@ -1978,36 +1962,6 @@
     document.getElementById('chatBtnFull')?.addEventListener('click', showFullChat);
     document.getElementById('notifyBtnFull')?.addEventListener('click', showNotificationsModal);
     
-    // Slide-out menu handlers
-    const menuToggle = document.getElementById('menuToggleBtn');
-    const slideMenu = document.getElementById('slideMenu');
-    const overlayEl = document.getElementById('overlay');
-    const closeSlide = document.getElementById('closeSlideMenu');
-    function openMenu() { slideMenu.classList.add('open'); overlayEl.classList.add('show'); renderAccountingLists(); }
-    function closeMenu() { slideMenu.classList.remove('open'); overlayEl.classList.remove('show'); }
-    menuToggle?.addEventListener('click', openMenu);
-    closeSlide?.addEventListener('click', closeMenu);
-    overlayEl?.addEventListener('click', closeMenu);
-    
-    // Menu tabs
-    const menuTabs = document.querySelectorAll('[data-menu-tab]');
-    const sections = {
-        equipment: document.getElementById('menuEquipmentSection'),
-        fluid: document.getElementById('menuFluidSection'),
-        chemical: document.getElementById('menuChemicalSection')
-    };
-    menuTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            menuTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            Object.values(sections).forEach(s => { if (s) s.style.display = 'none'; });
-            const type = tab.dataset.menuTab;
-            if (sections[type]) sections[type].style.display = 'block';
-            renderAccountingLists();
-        });
-    });
-    
-    // Add handlers for accounting
     document.getElementById('addEquipmentBtn')?.addEventListener('click', () => {
         if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
         addAccountingRecord('equipment', {
@@ -2052,7 +2006,6 @@
         renderAccountingLists();
     });
     
-    // Инициализация
     lastActivityTime = Date.now();
     loadLocalStore();
     loadUnlockedBrigades();
