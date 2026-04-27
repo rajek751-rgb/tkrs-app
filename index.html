@@ -14,6 +14,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="ТКРС Планирование">
     <style>
+        /* (стили остаются без изменений) */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         :root {
@@ -878,7 +879,7 @@
 
 <div id="syncStatus" class="sync-status">🔄 Загрузка...</div>
 
-<!-- Slide-out menu (ВСЯ ИНФОРМАЦИЯ ПО УЧЕТУ ПЕРЕМЕЩЕНА СЮДА) -->
+<!-- Slide-out menu -->
 <div id="slideMenu" class="slide-menu">
     <div class="close-slide" id="closeSlideMenu">&times;</div>
     <div>
@@ -887,7 +888,6 @@
         <div class="menu-tab" data-menu-tab="chemical">🧪 Хим. реагенты</div>
     </div>
     
-    <!-- Форма учета оборудования -->
     <div id="menuEquipmentSection" class="menu-section">
         <h3>Учет оборудования</h3>
         <div class="form-row"><label>Организация</label><input type="text" id="eqOrg" class="editable-field"></div>
@@ -900,7 +900,6 @@
         <div id="equipmentListSlide" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
     </div>
     
-    <!-- Форма учета технологической жидкости -->
     <div id="menuFluidSection" class="menu-section" style="display: none;">
         <h3>Учет технологической жидкости</h3>
         <div class="form-row"><label>Дата</label><input type="datetime-local" id="fluidDate" class="editable-field compact-datetime"></div>
@@ -911,7 +910,6 @@
         <div id="fluidListSlide" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
     </div>
     
-    <!-- Форма учета хим. реагентов -->
     <div id="menuChemicalSection" class="menu-section" style="display: none;">
         <h3>Учет движения хим. реагентов</h3>
         <div class="form-row"><label>Дата</label><input type="datetime-local" id="chemDate" class="editable-field compact-datetime"></div>
@@ -983,8 +981,9 @@
     let currentSupervisor = "";
     let isSupervisorMode = false;
     let supabaseClient = null;
+    let lastActivityTime = Date.now();
     
-    // Новая система учета (теперь только в выдвижном меню)
+    // Новая система учета
     let accountingData = { equipment: [], fluid: [], chemical: [] };
     
     function loadAccountingData() {
@@ -1006,19 +1005,16 @@
     }
     
     function renderAccountingLists() {
-        // Оборудование
         const equipList = document.getElementById('equipmentListSlide');
         if (equipList) {
             if (!accountingData.equipment.length) equipList.innerHTML = '<div class="info-text">Нет записей об оборудовании</div>';
             else equipList.innerHTML = accountingData.equipment.map(item => `<div class="item-card"><div class="item-title">📦 ${item.org} / ${item.name}</div><div>📅 Спуск: ${formatDateTime(item.start)} — Подъем: ${formatDateTime(item.end)}</div><div>⏱️ Наработка: ${item.hours} ч</div><div>📝 ${item.note || ''}</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
         }
-        // Жидкость
         const fluidList = document.getElementById('fluidListSlide');
         if (fluidList) {
             if (!accountingData.fluid.length) fluidList.innerHTML = '<div class="info-text">Нет записей о тех. жидкости</div>';
             else fluidList.innerHTML = accountingData.fluid.map(item => `<div class="item-card"><div class="item-title">💧 ${item.point}</div><div>📅 ${formatDateTime(item.date)}</div><div>🧪 Плотность: ${item.density} г/см³ | Объем: ${item.volume} м³</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
         }
-        // Хим. реагенты
         const chemList = document.getElementById('chemicalListSlide');
         if (chemList) {
             if (!accountingData.chemical.length) chemList.innerHTML = '<div class="info-text">Нет записей о хим. реагентах</div>';
@@ -1208,6 +1204,75 @@
         }
     }
     
+    // ========== АВТОМАТИЧЕСКОЕ ВОССТАНОВЛЕНИЕ SUPABASE КЛИЕНТА ==========
+    // Функция для проверки и восстановления клиента Supabase
+    async function reviveSupabaseClient() {
+        if (!supabaseClient) return false;
+        
+        try {
+            // Проверяем, жив ли клиент - делаем простой запрос
+            const { data, error } = await supabaseClient.from('brigades').select('count', { count: 'exact', head: true }).limit(1);
+            
+            // Если ошибка или клиент не отвечает, пересоздаем его
+            if (error && (error.message?.includes('JWT') || error.message?.includes('session') || error.message?.includes('connection'))) {
+                console.log('Supabase client seems stale, recreating...');
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                showToast('🔄 Соединение с сервером восстановлено');
+                await refreshAllData();
+                await syncOfflineQueue();
+                return true;
+            }
+            return true;
+        } catch (e) {
+            console.log('Error checking supabase health, recreating client:', e);
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            showToast('🔄 Соединение с сервером восстановлено');
+            await refreshAllData();
+            await syncOfflineQueue();
+            return true;
+        }
+    }
+    
+    // Обработчик видимости страницы - "пробуждение" приложения
+    function setupVisibilityHandler() {
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible') {
+                const timeAway = Date.now() - lastActivityTime;
+                console.log(`User returned after ${Math.floor(timeAway / 1000)} seconds`);
+                lastActivityTime = Date.now();
+                
+                // Пользователь вернулся в приложение
+                if (supabaseClient) {
+                    await reviveSupabaseClient();
+                }
+                
+                // Обновляем данные
+                await refreshAllData();
+                await loadAllBrigadesStatsAndRender();
+                
+                // Проверяем дедлайны заявок
+                await checkRequestDeadlines();
+                
+                showToast('🔄 Данные обновлены');
+            }
+        });
+        
+        // Также отслеживаем активность пользователя (клики, скролл)
+        const activityEvents = ['click', 'scroll', 'keydown', 'touchstart'];
+        activityEvents.forEach(event => {
+            document.addEventListener(event, () => {
+                lastActivityTime = Date.now();
+            });
+        });
+        
+        // Периодическая проверка каждые 5 минут (даже если вкладка активна)
+        setInterval(async () => {
+            if (document.visibilityState === 'visible' && supabaseClient) {
+                await reviveSupabaseClient();
+            }
+        }, 5 * 60 * 1000);
+    }
+    
     async function initSupabase() {
         if (typeof supabase !== 'undefined') {
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1217,6 +1282,7 @@
             await loadAllBrigadesStatsAndRender();
             await syncOfflineQueue();
             startNotificationChecker();
+            setupVisibilityHandler(); // Запускаем обработчик "пробуждения"
             return true;
         }
         return false;
@@ -1265,9 +1331,10 @@
     }
     
     async function saveBrigadeInfo() { 
-        if (supabaseClient && isCurrentBrigadeEditable() && currentBrigade && !isSupervisorMode) {
+        if (!supabaseClient) return;
+        if (isCurrentBrigadeEditable() && currentBrigade && !isSupervisorMode) {
             await supabaseClient.from('brigades').upsert({ brigade_name: currentBrigade, well_number: currentWellNumber, field_name: currentField, last_active: new Date().toISOString() });
-        } else if (supabaseClient && isCurrentBrigadeEditable() && isSupervisorMode && currentSupervisor) {
+        } else if (isCurrentBrigadeEditable() && isSupervisorMode && currentSupervisor) {
             await supabaseClient.from('supervisors').upsert({ supervisor_name: currentSupervisor, last_active: new Date().toISOString() });
         }
         localStorage.setItem('tkrs_profile', JSON.stringify({ brigade: currentBrigade, wellNumber: currentWellNumber, field: currentField, supervisor: currentSupervisor, isSupervisor: isSupervisorMode, unlockedBrigades: unlockedBrigades }));
@@ -1986,6 +2053,7 @@
     });
     
     // Инициализация
+    lastActivityTime = Date.now();
     loadLocalStore();
     loadUnlockedBrigades();
     loadChat();
