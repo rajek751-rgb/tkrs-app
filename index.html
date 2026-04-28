@@ -466,80 +466,6 @@
         a { color: var(--accent-blue); text-decoration: none; }
         button { font-family: inherit; }
 
-        .slide-menu {
-            position: fixed;
-            top: 0;
-            left: -320px;
-            width: 300px;
-            height: 100%;
-            background: var(--bg-elevated);
-            backdrop-filter: var(--blur-intensity);
-            z-index: 1500;
-            transition: left 0.3s;
-            padding: 20px;
-            box-shadow: var(--shadow-md);
-            border-right: var(--border-light);
-            overflow-y: auto;
-        }
-        .slide-menu.open {
-            left: 0;
-        }
-        .slide-menu .close-slide {
-            text-align: right;
-            font-size: 28px;
-            cursor: pointer;
-            color: var(--text-tertiary);
-        }
-        .slide-menu .menu-tab {
-            display: inline-block;
-            padding: 8px 16px;
-            margin-right: 8px;
-            cursor: pointer;
-            border-radius: 20px;
-            background: var(--bg-secondary);
-        }
-        .slide-menu .menu-tab.active {
-            background: var(--accent-blue);
-            color: white;
-        }
-        .slide-menu .menu-section {
-            margin-top: 20px;
-        }
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1499;
-            display: none;
-        }
-        .overlay.show {
-            display: block;
-        }
-        
-        .accounting-tab {
-            display: inline-block;
-            padding: 8px 16px;
-            margin-right: 8px;
-            margin-bottom: 16px;
-            cursor: pointer;
-            border-radius: 20px;
-            background: var(--bg-secondary);
-            font-size: 13px;
-        }
-        .accounting-tab.active {
-            background: var(--accent-blue);
-            color: white;
-        }
-        .accounting-section {
-            display: none;
-        }
-        .accounting-section.active {
-            display: block;
-        }
-        
         .global-accounting-tabs {
             display: flex;
             gap: 8px;
@@ -573,6 +499,27 @@
         .brigade-acc-item:hover {
             background: var(--bg-secondary);
             transform: translateX(3px);
+        }
+        
+        .accounting-tab {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-right: 8px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            background: var(--bg-secondary);
+            font-size: 13px;
+        }
+        .accounting-tab.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+        .accounting-section {
+            display: none;
+        }
+        .accounting-section.active {
+            display: block;
         }
     </style>
 </head>
@@ -1011,8 +958,8 @@
     }
 
     // ========== SUPABASE КОНФИГ ==========
-    const SUPABASE_URL = 'https://cilkfftdlfchezzqogyb.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_g0RX1ld7pcZ_hplw1c1aaQ_xvT1GeQS';
+    const SUPABASE_URL = 'https://oxaeeodcweivoqjpapot.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_IozmrJtFrleI4j0OW6Xe5A_giVv55kJ';
     const EDIT_PASSWORD = "tkrs2026";
     
     let cache = {};
@@ -1227,10 +1174,10 @@
         for (let i = 0; i < offlineQueue.length; i++) {
             const item = offlineQueue[i];
             try {
-                if (item.type === 'operation') await supabaseClient.from('operations').insert({ id: item.data.id, brigade_name: item.brigade, operation_data: item.data, created_at: item.data._timestamp });
-                else if (item.type === 'nsj') await supabaseClient.from('nsj_records').insert({ id: item.data.id, brigade_name: item.brigade, nsj_data: item.data, created_at: item.data._timestamp });
-                else if (item.type === 'request') await supabaseClient.from('requests').insert({ id: item.data.id, brigade_name: item.brigade, request_data: item.data, created_at: item.data._timestamp });
-                else if (item.type === 'summary') await supabaseClient.from('summaries').insert({ id: item.data.id, brigade_name: item.brigade, summary_data: item.data, created_at: item.data._timestamp });
+                if (item.type === 'operation') await supabaseClient.from('operations').insert({ brigade_name: item.brigade, operation_data: item.data, created_at: item.data._timestamp });
+                else if (item.type === 'nsj') await supabaseClient.from('nsj_records').insert({ brigade_name: item.brigade, nsj_data: item.data, created_at: item.data._timestamp });
+                else if (item.type === 'request') await supabaseClient.from('requests').insert({ brigade_name: item.brigade, request_data: item.data, created_at: item.data._timestamp });
+                else if (item.type === 'summary') await supabaseClient.from('summaries').insert({ brigade_name: item.brigade, summary_data: item.data, created_at: item.data._timestamp });
                 successCount++;
             } catch(e) { console.log('Ошибка синхронизации:', e); }
         }
@@ -1280,8 +1227,8 @@
         if (!supabaseClient) return false;
         try {
             const { error } = await supabaseClient.from('brigades').select('count', { count: 'exact', head: true }).limit(1);
-            if (error && (error.message?.includes('JWT') || error.message?.includes('session') || error.message?.includes('connection'))) {
-                console.log('Supabase client seems stale, recreating...');
+            if (error) {
+                console.log('Supabase client error, recreating...');
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 showToast('🔄 Соединение с сервером восстановлено');
                 await refreshAllData();
@@ -1290,7 +1237,7 @@
             }
             return true;
         } catch (e) {
-            console.log('Error checking supabase health, recreating client:', e);
+            console.log('Error checking supabase, recreating client:', e);
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             showToast('🔄 Соединение с сервером восстановлено');
             await refreshAllData();
@@ -1332,6 +1279,7 @@
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             loadOfflineQueue();
             await loadBrigadeInfo();
+            await loadBrigadesFromDB();
             await refreshAllData();
             await loadAllBrigadesStatsAndRender();
             await syncOfflineQueue();
@@ -1340,6 +1288,27 @@
             return true;
         }
         return false;
+    }
+    
+    async function loadBrigadesFromDB() {
+        if (!supabaseClient) return;
+        try {
+            const { data, error } = await supabaseClient.from('brigades').select('brigade_name, well_number, field_name');
+            if (error) throw error;
+            if (data && data.length > 0) {
+                const select = document.getElementById('brigadeSelect');
+                if (select) {
+                    data.forEach(brigade => {
+                        const option = select.querySelector(`option[value="${brigade.brigade_name}"]`);
+                        if (option && brigade.well_number) {
+                            option.textContent = `${brigade.brigade_name} (скв. ${brigade.well_number})`;
+                        }
+                    });
+                }
+            }
+        } catch(e) {
+            console.log('Error loading brigades from DB:', e);
+        }
     }
     
     let notificationInterval = null;
@@ -1408,7 +1377,7 @@
         if (savedProfile) {
             try {
                 const profile = JSON.parse(savedProfile);
-                if (profile.brigade && !isSupervisorMode) {
+                if (profile.brigade && !profile.isSupervisor) {
                     currentBrigade = profile.brigade;
                     currentWellNumber = profile.wellNumber || "";
                     currentField = profile.field || "";
@@ -1654,16 +1623,21 @@
     
     function updateUIBasedOnMode() {
         const editable = isCurrentBrigadeEditable();
-        document.getElementById('accessBadge').innerHTML = editable ? '<span class="edit-mode-badge">✏️ Режим редактирования (пароль активен)</span>' : '<span class="readonly-badge">👁️ Режим просмотра (введите пароль)</span>';
+        const badge = document.getElementById('accessBadge');
+        if (badge) {
+            badge.innerHTML = editable ? '<span class="edit-mode-badge">✏️ Режим редактирования (пароль активен)</span>' : '<span class="readonly-badge">👁️ Режим просмотра (введите пароль)</span>';
+        }
         updateWellInfo();
     }
     
     function updateWellInfo() { 
         const container = document.getElementById('currentWellInfo');
-        if (isSupervisorMode) {
-            container.innerHTML = `<div><strong>👨‍💼 Режим:</strong> Руководитель</div><div><strong>Фамилия:</strong> ${currentSupervisor || 'не указана'}</div><div class="action-hint">${isCurrentBrigadeEditable() ? '✏️ Редактирование' : '🔒 Просмотр'}</div>`; 
-        } else {
-            container.innerHTML = `<div><strong>🏭 Бригада:</strong> ${currentBrigade || 'не выбрана'}</div><div><strong>🛢️ Скважина/Месторождение:</strong> ${getFullWellName()}</div><div class="action-hint">${isCurrentBrigadeEditable() ? '✏️ Редактирование' : '🔒 Просмотр'}</div>`; 
+        if (container) {
+            if (isSupervisorMode) {
+                container.innerHTML = `<div><strong>👨‍💼 Режим:</strong> Руководитель</div><div><strong>Фамилия:</strong> ${currentSupervisor || 'не указана'}</div><div class="action-hint">${isCurrentBrigadeEditable() ? '✏️ Редактирование' : '🔒 Просмотр'}</div>`; 
+            } else {
+                container.innerHTML = `<div><strong>🏭 Бригада:</strong> ${currentBrigade || 'не выбрана'}</div><div><strong>🛢️ Скважина/Месторождение:</strong> ${getFullWellName()}</div><div class="action-hint">${isCurrentBrigadeEditable() ? '✏️ Редактирование' : '🔒 Просмотр'}</div>`; 
+            }
         }
     }
     
@@ -1675,7 +1649,21 @@
         document.getElementById('cancelPassword').addEventListener('click',()=>overlay.remove()); 
     }
     
-    async function refreshAllData() { if(isLoading) return; isLoading=true; if(currentBrigade && !isSupervisorMode) { const [ops, nsj, reqs, sums] = await Promise.all([loadOperations(), loadNsj(), loadRequests(), loadSummary()]); renderOperations(ops); renderNsjHistory(nsj); renderRequests(reqs); renderSummary(sums); } updateUIBasedOnMode(); isLoading=false; await loadAllBrigadesStatsAndRender(); renderAccountingLists(); }
+    async function refreshAllData() { 
+        if(isLoading) return; 
+        isLoading=true; 
+        if(currentBrigade && !isSupervisorMode) { 
+            const [ops, nsj, reqs, sums] = await Promise.all([loadOperations(), loadNsj(), loadRequests(), loadSummary()]); 
+            renderOperations(ops); 
+            renderNsjHistory(nsj); 
+            renderRequests(reqs); 
+            renderSummary(sums); 
+        } 
+        updateUIBasedOnMode(); 
+        isLoading=false; 
+        await loadAllBrigadesStatsAndRender(); 
+        renderAccountingLists(); 
+    }
     
     async function loadOperations() { 
         if(!currentBrigade || isSupervisorMode) return [];
@@ -1694,7 +1682,7 @@
         addLocalItem('operations', newOp); 
         if (!navigator.onLine) { addToOfflineQueue('operation', newOp); highlightNewItem('operationsList', newId); updateBrigadeLastChange(currentBrigade); return newOp; }
         try {
-            await supabaseClient.from('operations').insert({ id: newId, brigade_name: currentBrigade, operation_data: newOp, created_at: newOp._timestamp }); 
+            await supabaseClient.from('operations').insert({ brigade_name: currentBrigade, operation_data: newOp, created_at: newOp._timestamp }); 
             cache[`operations_${currentBrigade}`]=null; 
             highlightNewItem('operationsList', newId);
             updateBrigadeLastChange(currentBrigade);
@@ -1720,7 +1708,7 @@
         addLocalItem('nsj', newRec); 
         if (!navigator.onLine) { addToOfflineQueue('nsj', newRec); highlightNewItem('nsjHistoryList', newId); updateBrigadeLastChange(currentBrigade); return newRec; }
         try {
-            await supabaseClient.from('nsj_records').insert({ id: newId, brigade_name: currentBrigade, nsj_data: newRec, created_at: newRec._timestamp }); 
+            await supabaseClient.from('nsj_records').insert({ brigade_name: currentBrigade, nsj_data: newRec, created_at: newRec._timestamp }); 
             cache[`nsj_${currentBrigade}`]=null; 
             highlightNewItem('nsjHistoryList', newId);
             updateBrigadeLastChange(currentBrigade);
@@ -1748,7 +1736,7 @@
         addLocalItem('requests', newReq); 
         if (!navigator.onLine) { addToOfflineQueue('request', newReq); highlightNewItem('requestsList', newId); updateBrigadeLastChange(currentBrigade); return newReq; }
         try {
-            await supabaseClient.from('requests').insert({ id: newId, brigade_name: currentBrigade, request_data: newReq, created_at: newReq._timestamp }); 
+            await supabaseClient.from('requests').insert({ brigade_name: currentBrigade, request_data: newReq, created_at: newReq._timestamp }); 
             cache[`requests_${currentBrigade}`]=null; 
             highlightNewItem('requestsList', newId);
             updateBrigadeLastChange(currentBrigade);
@@ -1774,7 +1762,7 @@
         addLocalItem('summaries', newSum); 
         if (!navigator.onLine) { addToOfflineQueue('summary', newSum); highlightNewItem('summaryList', newId); updateBrigadeLastChange(currentBrigade); return newSum; }
         try {
-            await supabaseClient.from('summaries').insert({ id: newId, brigade_name: currentBrigade, summary_data: newSum, created_at: newSum._timestamp }); 
+            await supabaseClient.from('summaries').insert({ brigade_name: currentBrigade, summary_data: newSum, created_at: newSum._timestamp }); 
             cache[`summary_${currentBrigade}`]=null; 
             highlightNewItem('summaryList', newId);
             updateBrigadeLastChange(currentBrigade);
@@ -1863,15 +1851,18 @@
         `;
         document.body.appendChild(modal);
         const messagesDiv = document.getElementById('chatMessagesFull');
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        document.getElementById('closeChatFull').addEventListener('click', () => modal.remove());
-        document.getElementById('sendChatFull').addEventListener('click', () => {
+        if (messagesDiv) messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        document.getElementById('closeChatFull')?.addEventListener('click', () => modal.remove());
+        document.getElementById('sendChatFull')?.addEventListener('click', () => {
             const input = document.getElementById('chatInputFull');
-            if (input.value.trim()) {
+            if (input && input.value.trim()) {
                 addChatMessage(input.value);
                 input.value = '';
-                document.getElementById('chatMessagesFull').innerHTML = chatMessages.map(m => `<div class="message-bubble"><strong>${m.author}</strong> <small style="color:#888;">${formatDateTime(m.date)}</small><br>${m.text}</div>`).join('');
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                const messagesContainer = document.getElementById('chatMessagesFull');
+                if (messagesContainer) {
+                    messagesContainer.innerHTML = chatMessages.map(m => `<div class="message-bubble"><strong>${m.author}</strong> <small style="color:#888;">${formatDateTime(m.date)}</small><br>${m.text}</div>`).join('');
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
                 showToast('Сообщение отправлено');
             }
         });
@@ -1903,21 +1894,25 @@
     const fileGallery = document.getElementById('fileGallery');
     const fileLinkInput = document.getElementById('fileLink');
     
-    fileUploadBtn?.addEventListener('click', () => { if(isCurrentBrigadeEditable()) fileInput.click(); else showToast("Нет прав для загрузки файлов"); });
-    fileInput?.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if(file && isCurrentBrigadeEditable()){
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const fileUrl = evt.target.result;
-                uploadedFiles.push({ name: file.name, url: fileUrl, type: file.type });
-                fileLinkInput.value = fileUrl;
-                renderFileGallery();
-                showToast(`Файл ${file.name} загружен`);
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+    if (fileUploadBtn) {
+        fileUploadBtn.addEventListener('click', () => { if(isCurrentBrigadeEditable() && fileInput) fileInput.click(); else showToast("Нет прав для загрузки файлов"); });
+    }
+    if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file && isCurrentBrigadeEditable()){
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const fileUrl = evt.target.result;
+                    uploadedFiles.push({ name: file.name, url: fileUrl, type: file.type });
+                    if (fileLinkInput) fileLinkInput.value = fileUrl;
+                    renderFileGallery();
+                    showToast(`Файл ${file.name} загружен`);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
     
     function renderFileGallery() {
         if(!fileGallery) return;
@@ -1958,8 +1953,8 @@
                 currentBrigade = "";
                 currentWellNumber = "";
                 currentField = "";
-                wellFieldsContainer.style.display = 'none';
-                supervisorFieldRow.style.display = 'block';
+                if (wellFieldsContainer) wellFieldsContainer.style.display = 'none';
+                if (supervisorFieldRow) supervisorFieldRow.style.display = 'block';
                 if (wellNumberInput) wellNumberInput.value = "";
                 if (fieldNameInput) fieldNameInput.value = "";
                 if (supabaseClient) {
@@ -1976,8 +1971,8 @@
             } else if (selectedValue && selectedValue !== "") {
                 isSupervisorMode = false;
                 currentBrigade = selectedValue;
-                wellFieldsContainer.style.display = 'block';
-                supervisorFieldRow.style.display = 'none';
+                if (wellFieldsContainer) wellFieldsContainer.style.display = 'block';
+                if (supervisorFieldRow) supervisorFieldRow.style.display = 'none';
                 if (supervisorNameInput) supervisorNameInput.value = "";
                 currentSupervisor = "";
                 await loadBrigadeInfo();
@@ -1992,8 +1987,8 @@
                 currentWellNumber = "";
                 currentField = "";
                 currentSupervisor = "";
-                wellFieldsContainer.style.display = 'block';
-                supervisorFieldRow.style.display = 'none';
+                if (wellFieldsContainer) wellFieldsContainer.style.display = 'block';
+                if (supervisorFieldRow) supervisorFieldRow.style.display = 'none';
                 if (wellNumberInput) wellNumberInput.value = "";
                 if (fieldNameInput) fieldNameInput.value = "";
                 if (supervisorNameInput) supervisorNameInput.value = "";
@@ -2065,62 +2060,143 @@
         });
     }
     
-    document.getElementById('unlockEditBtn').addEventListener('click', () => requestPassword());
-    document.getElementById('addOperationBtn')?.addEventListener('click', async () => { if(!isCurrentBrigadeEditable()){ showToast("Нет прав"); return; } await addOperationToDB({ name: document.getElementById('opName').value, startDateTime: document.getElementById('graphStartDateTime').value, endDateTime: document.getElementById('graphEndDateTime').value, tech: document.getElementById('opTech').value, representative: document.getElementById('opRepresentative').value, materials: document.getElementById('opMaterials').value }); refreshAllData(); });
-    document.getElementById('saveNsjBtn')?.addEventListener('click', async () => { if(!isCurrentBrigadeEditable()){ showToast("Нет прав"); return; } await addNsjToDB({ datetime: document.getElementById('nsjDateTime').value, type: document.getElementById('nsjType').value, volume: parseFloat(document.getElementById('nsjVolume').value), completed: false }); refreshAllData(); });
-    document.getElementById('addRequestBtn')?.addEventListener('click', async () => { if(!isCurrentBrigadeEditable()){ showToast("Нет прав"); return; } const type = document.getElementById('requestType').value; if(!type){ showToast("Выберите тип заявки"); return; } await addRequestToDB({ type, action: document.getElementById('requestAction').value, deadline: document.getElementById('requestDeadline').value, note: document.getElementById('requestNote').value, brigade: currentBrigade }); refreshAllData(); setTimeout(() => checkRequestDeadlines(), 1000); });
-    document.getElementById('addSummaryRecord')?.addEventListener('click', async () => { if(!isCurrentBrigadeEditable()){ showToast("Нет прав"); return; } await addSummaryToDB({ start_datetime: document.getElementById('summaryStartDateTime').value, end_datetime: document.getElementById('summaryEndDateTime').value, volume: document.getElementById('workVolume').value, file: document.getElementById('fileLink').value }); refreshAllData(); });
-    document.getElementById('requestType')?.addEventListener('change', updateRequestHintFromRules);
-    document.getElementById('filterCdngSelect')?.addEventListener('change', () => renderNsjAllPanel());
-    document.getElementById('chatBtnFull')?.addEventListener('click', showFullChat);
-    document.getElementById('notifyBtnFull')?.addEventListener('click', showNotificationsModal);
+    const unlockEditBtn = document.getElementById('unlockEditBtn');
+    if (unlockEditBtn) unlockEditBtn.addEventListener('click', () => requestPassword());
     
-    document.getElementById('addEquipmentBtn')?.addEventListener('click', () => {
-        if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
-        addAccountingRecord('equipment', {
-            org: document.getElementById('eqOrg').value,
-            name: document.getElementById('eqName').value,
-            start: document.getElementById('eqStart').value,
-            end: document.getElementById('eqEnd').value,
-            hours: document.getElementById('eqHours').value,
-            note: document.getElementById('eqNote').value
+    const addOperationBtn = document.getElementById('addOperationBtn');
+    if (addOperationBtn) {
+        addOperationBtn.addEventListener('click', async () => { 
+            if(!isCurrentBrigadeEditable()){ showToast("Нет прав"); return; } 
+            await addOperationToDB({ 
+                name: document.getElementById('opName').value, 
+                startDateTime: document.getElementById('graphStartDateTime').value, 
+                endDateTime: document.getElementById('graphEndDateTime').value, 
+                tech: document.getElementById('opTech').value, 
+                representative: document.getElementById('opRepresentative').value, 
+                materials: document.getElementById('opMaterials').value 
+            }); 
+            refreshAllData(); 
         });
-        showToast("Запись об оборудовании добавлена");
-        document.getElementById('eqOrg').value = ''; document.getElementById('eqName').value = ''; document.getElementById('eqStart').value = ''; document.getElementById('eqEnd').value = ''; document.getElementById('eqHours').value = ''; document.getElementById('eqNote').value = '';
-        renderAccountingLists();
-        loadAllAccountingDataAndRender();
-    });
-    document.getElementById('addFluidBtn')?.addEventListener('click', () => {
-        if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
-        addAccountingRecord('fluid', {
-            date: document.getElementById('fluidDate').value,
-            point: document.getElementById('fluidPoint').value,
-            density: document.getElementById('fluidDensity').value,
-            volume: document.getElementById('fluidVolume').value
+    }
+    
+    const saveNsjBtn = document.getElementById('saveNsjBtn');
+    if (saveNsjBtn) {
+        saveNsjBtn.addEventListener('click', async () => { 
+            if(!isCurrentBrigadeEditable()){ showToast("Нет прав"); return; } 
+            await addNsjToDB({ 
+                datetime: document.getElementById('nsjDateTime').value, 
+                type: document.getElementById('nsjType').value, 
+                volume: parseFloat(document.getElementById('nsjVolume').value), 
+                completed: false 
+            }); 
+            refreshAllData(); 
         });
-        showToast("Запись о тех. жидкости добавлена");
-        document.getElementById('fluidDate').value = ''; document.getElementById('fluidPoint').value = ''; document.getElementById('fluidDensity').value = ''; document.getElementById('fluidVolume').value = '';
-        renderAccountingLists();
-        loadAllAccountingDataAndRender();
-    });
-    document.getElementById('addChemicalBtn')?.addEventListener('click', () => {
-        if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
-        addAccountingRecord('chemical', {
-            date: document.getElementById('chemDate').value,
-            import: document.getElementById('chemImport').value,
-            expense: document.getElementById('chemExpense').value,
-            remain: document.getElementById('chemRemain').value,
-            name: document.getElementById('chemName').value,
-            batch: document.getElementById('chemBatch').value,
-            totalVol: document.getElementById('chemTotalVol').value,
-            operation: document.getElementById('chemOperation').value,
-            used: document.getElementById('chemUsed').value
+    }
+    
+    const addRequestBtn = document.getElementById('addRequestBtn');
+    if (addRequestBtn) {
+        addRequestBtn.addEventListener('click', async () => { 
+            if(!isCurrentBrigadeEditable()){ showToast("Нет прав"); return; } 
+            const type = document.getElementById('requestType').value; 
+            if(!type){ showToast("Выберите тип заявки"); return; } 
+            await addRequestToDB({ 
+                type, 
+                action: document.getElementById('requestAction').value, 
+                deadline: document.getElementById('requestDeadline').value, 
+                note: document.getElementById('requestNote').value, 
+                brigade: currentBrigade 
+            }); 
+            refreshAllData(); 
+            setTimeout(() => checkRequestDeadlines(), 1000); 
         });
-        showToast("Запись о хим. реагенте добавлена");
-        document.getElementById('chemDate').value = ''; document.getElementById('chemImport').value = ''; document.getElementById('chemExpense').value = ''; document.getElementById('chemRemain').value = ''; document.getElementById('chemName').value = ''; document.getElementById('chemBatch').value = ''; document.getElementById('chemTotalVol').value = ''; document.getElementById('chemOperation').value = ''; document.getElementById('chemUsed').value = '';
-        renderAccountingLists();
-        loadAllAccountingDataAndRender();
-    });
+    }
+    
+    const addSummaryRecord = document.getElementById('addSummaryRecord');
+    if (addSummaryRecord) {
+        addSummaryRecord.addEventListener('click', async () => { 
+            if(!isCurrentBrigadeEditable()){ showToast("Нет прав"); return; } 
+            await addSummaryToDB({ 
+                start_datetime: document.getElementById('summaryStartDateTime').value, 
+                end_datetime: document.getElementById('summaryEndDateTime').value, 
+                volume: document.getElementById('workVolume').value, 
+                file: document.getElementById('fileLink').value 
+            }); 
+            refreshAllData(); 
+        });
+    }
+    
+    const requestTypeSelect = document.getElementById('requestType');
+    if (requestTypeSelect) requestTypeSelect.addEventListener('change', updateRequestHintFromRules);
+    
+    const filterCdngSelect = document.getElementById('filterCdngSelect');
+    if (filterCdngSelect) filterCdngSelect.addEventListener('change', () => renderNsjAllPanel());
+    
+    const chatBtnFull = document.getElementById('chatBtnFull');
+    if (chatBtnFull) chatBtnFull.addEventListener('click', showFullChat);
+    
+    const notifyBtnFull = document.getElementById('notifyBtnFull');
+    if (notifyBtnFull) notifyBtnFull.addEventListener('click', showNotificationsModal);
+    
+    const addEquipmentBtn = document.getElementById('addEquipmentBtn');
+    if (addEquipmentBtn) {
+        addEquipmentBtn.addEventListener('click', () => {
+            if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
+            addAccountingRecord('equipment', {
+                org: document.getElementById('eqOrg').value,
+                name: document.getElementById('eqName').value,
+                start: document.getElementById('eqStart').value,
+                end: document.getElementById('eqEnd').value,
+                hours: document.getElementById('eqHours').value,
+                note: document.getElementById('eqNote').value
+            });
+            showToast("Запись об оборудовании добавлена");
+            const inputs = ['eqOrg', 'eqName', 'eqStart', 'eqEnd', 'eqHours', 'eqNote'];
+            inputs.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            renderAccountingLists();
+            loadAllAccountingDataAndRender();
+        });
+    }
+    
+    const addFluidBtn = document.getElementById('addFluidBtn');
+    if (addFluidBtn) {
+        addFluidBtn.addEventListener('click', () => {
+            if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
+            addAccountingRecord('fluid', {
+                date: document.getElementById('fluidDate').value,
+                point: document.getElementById('fluidPoint').value,
+                density: document.getElementById('fluidDensity').value,
+                volume: document.getElementById('fluidVolume').value
+            });
+            showToast("Запись о тех. жидкости добавлена");
+            const inputs = ['fluidDate', 'fluidPoint', 'fluidDensity', 'fluidVolume'];
+            inputs.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            renderAccountingLists();
+            loadAllAccountingDataAndRender();
+        });
+    }
+    
+    const addChemicalBtn = document.getElementById('addChemicalBtn');
+    if (addChemicalBtn) {
+        addChemicalBtn.addEventListener('click', () => {
+            if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
+            addAccountingRecord('chemical', {
+                date: document.getElementById('chemDate').value,
+                import: document.getElementById('chemImport').value,
+                expense: document.getElementById('chemExpense').value,
+                remain: document.getElementById('chemRemain').value,
+                name: document.getElementById('chemName').value,
+                batch: document.getElementById('chemBatch').value,
+                totalVol: document.getElementById('chemTotalVol').value,
+                operation: document.getElementById('chemOperation').value,
+                used: document.getElementById('chemUsed').value
+            });
+            showToast("Запись о хим. реагенте добавлена");
+            const inputs = ['chemDate', 'chemImport', 'chemExpense', 'chemRemain', 'chemName', 'chemBatch', 'chemTotalVol', 'chemOperation', 'chemUsed'];
+            inputs.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            renderAccountingLists();
+            loadAllAccountingDataAndRender();
+        });
+    }
     
     lastActivityTime = Date.now();
     loadLocalStore();
@@ -2134,7 +2210,10 @@
     setupGlobalTabs();
     setupAccountingMainTabs();
     
-    const script = document.createElement('script'); script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'; script.onload = () => { initSupabase(); }; document.head.appendChild(script);
+    const script = document.createElement('script'); 
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'; 
+    script.onload = () => { initSupabase(); }; 
+    document.head.appendChild(script);
 </script>
 </body>
 </html>
