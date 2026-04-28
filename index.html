@@ -539,6 +539,41 @@
         .accounting-section.active {
             display: block;
         }
+        
+        .global-accounting-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--separator);
+            padding-bottom: 12px;
+        }
+        .global-acc-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            background: var(--bg-secondary);
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .global-acc-tab.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+        .global-acc-section {
+            display: none;
+        }
+        .global-acc-section.active {
+            display: block;
+        }
+        .brigade-acc-item {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .brigade-acc-item:hover {
+            background: var(--bg-secondary);
+            transform: translateX(3px);
+        }
     </style>
 </head>
 <body>
@@ -567,15 +602,17 @@
             <span class="collapse-icon">▼</span>
         </div>
         <div class="card-content" id="allBrigadesContent">
-            <div class="brigade-detail-tabs" style="margin-top: 0; margin-bottom: 16px;">
-                <div class="detail-tab active" data-brigade-tab="stats">📊 Статистика бригад</div>
-                <div class="detail-tab" data-brigade-tab="nsjAll">💧 Сводка НСЖ (невывоз)</div>
-                <div class="detail-tab" data-brigade-tab="accounting">📦 Учет</div>
+            <div class="global-accounting-tabs" id="globalAccountingTabs">
+                <div class="global-acc-tab active" data-global-tab="stats">📊 Статистика бригад</div>
+                <div class="global-acc-tab" data-global-tab="nsjAll">💧 Сводка НСЖ</div>
+                <div class="global-acc-tab" data-global-tab="equipmentAll">📦 Сводка Оборудование</div>
+                <div class="global-acc-tab" data-global-tab="fluidAll">💧 Сводка Тех. жидкость</div>
+                <div class="global-acc-tab" data-global-tab="chemicalAll">🧪 Сводка Хим. реагенты</div>
             </div>
-            <div id="brigadeStatsPanel">
+            <div id="statsPanel" class="global-acc-section active">
                 <div id="allBrigadesCompact"></div>
             </div>
-            <div id="nsjAllPanel" style="display: none;">
+            <div id="nsjAllPanel" class="global-acc-section">
                 <div class="filter-bar">
                     <label>№ ЦДНГ:</label>
                     <select id="filterCdngSelect">
@@ -591,43 +628,14 @@
                 </div>
                 <div id="allNsjPendingList" class="items-list" style="max-height: 400px;"></div>
             </div>
-            <div id="accountingPanel" style="display: none;">
-                <div>
-                    <div class="accounting-tab active" data-acc-tab="equipment">📦 Оборудование</div>
-                    <div class="accounting-tab" data-acc-tab="fluid">💧 Тех. жидкость</div>
-                    <div class="accounting-tab" data-acc-tab="chemical">🧪 Хим. реагенты</div>
-                </div>
-                <div id="equipmentSection" class="accounting-section active">
-                    <div class="form-row"><label>Организация</label><input type="text" id="eqOrg" class="editable-field" placeholder="Наименование организации"></div>
-                    <div class="form-row"><label>Наименование оборудования</label><input type="text" id="eqName" class="editable-field" placeholder="Оборудование"></div>
-                    <div class="form-row"><label>Дата начала спуска</label><input type="datetime-local" id="eqStart" class="editable-field compact-datetime"></div>
-                    <div class="form-row"><label>Дата окончания подъема</label><input type="datetime-local" id="eqEnd" class="editable-field compact-datetime"></div>
-                    <div class="form-row"><label>Наработка, час</label><input type="number" id="eqHours" class="editable-field" placeholder="Часы"></div>
-                    <div class="form-row"><label>Примечание (эффективность)</label><textarea id="eqNote" rows="2" placeholder="Примечание"></textarea></div>
-                    <button class="btn btn-primary" id="addEquipmentBtn">➕ Добавить запись</button>
-                    <div id="equipmentListPanel" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
-                </div>
-                <div id="fluidSection" class="accounting-section">
-                    <div class="form-row"><label>Дата</label><input type="datetime-local" id="fluidDate" class="editable-field compact-datetime"></div>
-                    <div class="form-row"><label>Пункт набора ПНТЖ</label><input type="text" id="fluidPoint" class="editable-field" placeholder="Пункт набора"></div>
-                    <div class="form-row"><label>Плотность жидкости, г/см³</label><input type="number" step="0.01" id="fluidDensity" class="editable-field" placeholder="Плотность"></div>
-                    <div class="form-row"><label>Объем жидкости, м³</label><input type="number" step="0.1" id="fluidVolume" class="editable-field" placeholder="Объем"></div>
-                    <button class="btn btn-primary" id="addFluidBtn">➕ Добавить запись</button>
-                    <div id="fluidListPanel" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
-                </div>
-                <div id="chemicalSection" class="accounting-section">
-                    <div class="form-row"><label>Дата</label><input type="datetime-local" id="chemDate" class="editable-field compact-datetime"></div>
-                    <div class="form-row"><label>Завоз, кг</label><input type="number" id="chemImport" class="editable-field" placeholder="Завоз"></div>
-                    <div class="form-row"><label>Расход, кг</label><input type="number" id="chemExpense" class="editable-field" placeholder="Расход"></div>
-                    <div class="form-row"><label>Остаток после окончания работ, кг</label><input type="number" id="chemRemain" class="editable-field" placeholder="Остаток"></div>
-                    <div class="form-row"><label>Наименование Хим. реагента</label><input type="text" id="chemName" class="editable-field" placeholder="Наименование"></div>
-                    <div class="form-row"><label>Номер партии</label><input type="text" id="chemBatch" class="editable-field" placeholder="Партия"></div>
-                    <div class="form-row"><label>Объем, кг</label><input type="number" id="chemTotalVol" class="editable-field" placeholder="Объем"></div>
-                    <div class="form-row"><label>Вид выполняемой тех. операции</label><input type="text" id="chemOperation" class="editable-field" placeholder="Операция"></div>
-                    <div class="form-row"><label>Использовано, кг</label><input type="number" id="chemUsed" class="editable-field" placeholder="Использовано"></div>
-                    <button class="btn btn-primary" id="addChemicalBtn">➕ Добавить запись</button>
-                    <div id="chemicalListPanel" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
-                </div>
+            <div id="equipmentAllPanel" class="global-acc-section">
+                <div id="allEquipmentList" class="items-list" style="max-height: 500px;"></div>
+            </div>
+            <div id="fluidAllPanel" class="global-acc-section">
+                <div id="allFluidList" class="items-list" style="max-height: 500px;"></div>
+            </div>
+            <div id="chemicalAllPanel" class="global-acc-section">
+                <div id="allChemicalList" class="items-list" style="max-height: 500px;"></div>
             </div>
         </div>
     </div>
@@ -723,34 +731,77 @@
 
         <div id="tab-nsj" class="tab-content" style="display: none;">
             <div class="card">
-                <div class="card-header"><span>💧</span> НСЖ (нефть, жидкость, АСПО, вывоз)</div>
+                <div class="card-header"><span>💧</span> Учет НСЖ / Тех жидкость / Оборудование / Хим. Реагенты</div>
                 <div class="card-content">
-                    <div class="form-row">
-                        <label>📅 Дата и время замера</label>
-                        <input type="datetime-local" id="nsjDateTime" class="editable-field compact-datetime">
+                    <div class="accounting-tabs" id="accountingMainTabs">
+                        <div class="accounting-tab active" data-acc-main="nsj">💧 НСЖ (невывоз)</div>
+                        <div class="accounting-tab" data-acc-main="fluid">💧 Тех. жидкость</div>
+                        <div class="accounting-tab" data-acc-main="equipment">📦 Оборудование</div>
+                        <div class="accounting-tab" data-acc-main="chemical">🧪 Хим. реагенты</div>
                     </div>
-                    <div class="form-row">
-                        <label>№ ЦДНГ</label>
-                        <select id="nsjType" class="editable-field">
-                            <option value="УЦДНГ 01">УЦДНГ 01</option>
-                            <option value="УЦДНГ 02">УЦДНГ 02</option>
-                            <option value="УЦДНГ 03">УЦДНГ 03</option>
-                            <option value="УЦДНГ 04">УЦДНГ 04</option>
-                            <option value="ЧЦДНГ 01">ЧЦДНГ 01</option>
-                            <option value="ЧЦДНГ 02">ЧЦДНГ 02</option>
-                            <option value="ЧЦДНГ 03">ЧЦДНГ 03</option>
-                        </select>
+                    
+                    <div id="nsjAccountingSection" class="accounting-section active">
+                        <div class="form-row">
+                            <label>📅 Дата и время замера</label>
+                            <input type="datetime-local" id="nsjDateTime" class="editable-field compact-datetime">
+                        </div>
+                        <div class="form-row">
+                            <label>№ ЦДНГ</label>
+                            <select id="nsjType" class="editable-field">
+                                <option value="УЦДНГ 01">УЦДНГ 01</option>
+                                <option value="УЦДНГ 02">УЦДНГ 02</option>
+                                <option value="УЦДНГ 03">УЦДНГ 03</option>
+                                <option value="УЦДНГ 04">УЦДНГ 04</option>
+                                <option value="ЧЦДНГ 01">ЧЦДНГ 01</option>
+                                <option value="ЧЦДНГ 02">ЧЦДНГ 02</option>
+                                <option value="ЧЦДНГ 03">ЧЦДНГ 03</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label>Объем, м³</label>
+                            <input type="number" id="nsjVolume" step="0.1" class="editable-field">
+                        </div>
+                        <div class="flex-btns">
+                            <button class="btn btn-primary" id="saveNsjBtn">💾 Сохранить замер</button>
+                        </div>
+                        <div id="nsjHistory" class="summary-block">
+                            <strong>📋 История замеров:</strong>
+                            <div id="nsjHistoryList"></div>
+                        </div>
                     </div>
-                    <div class="form-row">
-                        <label>Объем, м³</label>
-                        <input type="number" id="nsjVolume" step="0.1" class="editable-field">
+                    
+                    <div id="fluidAccountingSection" class="accounting-section">
+                        <div class="form-row"><label>Дата</label><input type="datetime-local" id="fluidDate" class="editable-field compact-datetime"></div>
+                        <div class="form-row"><label>Пункт набора ПНТЖ</label><input type="text" id="fluidPoint" class="editable-field" placeholder="Пункт набора"></div>
+                        <div class="form-row"><label>Плотность жидкости, г/см³</label><input type="number" step="0.01" id="fluidDensity" class="editable-field" placeholder="Плотность"></div>
+                        <div class="form-row"><label>Объем жидкости, м³</label><input type="number" step="0.1" id="fluidVolume" class="editable-field" placeholder="Объем"></div>
+                        <button class="btn btn-primary" id="addFluidBtn">➕ Добавить запись</button>
+                        <div id="fluidListPanel" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
                     </div>
-                    <div class="flex-btns">
-                        <button class="btn btn-primary" id="saveNsjBtn">💾 Сохранить замер</button>
+                    
+                    <div id="equipmentAccountingSection" class="accounting-section">
+                        <div class="form-row"><label>Организация</label><input type="text" id="eqOrg" class="editable-field" placeholder="Наименование организации"></div>
+                        <div class="form-row"><label>Наименование оборудования</label><input type="text" id="eqName" class="editable-field" placeholder="Оборудование"></div>
+                        <div class="form-row"><label>Дата начала спуска</label><input type="datetime-local" id="eqStart" class="editable-field compact-datetime"></div>
+                        <div class="form-row"><label>Дата окончания подъема</label><input type="datetime-local" id="eqEnd" class="editable-field compact-datetime"></div>
+                        <div class="form-row"><label>Наработка, час</label><input type="number" id="eqHours" class="editable-field" placeholder="Часы"></div>
+                        <div class="form-row"><label>Примечание (эффективность)</label><textarea id="eqNote" rows="2" placeholder="Примечание"></textarea></div>
+                        <button class="btn btn-primary" id="addEquipmentBtn">➕ Добавить запись</button>
+                        <div id="equipmentListPanel" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
                     </div>
-                    <div id="nsjHistory" class="summary-block">
-                        <strong>📋 История замеров:</strong>
-                        <div id="nsjHistoryList"></div>
+                    
+                    <div id="chemicalAccountingSection" class="accounting-section">
+                        <div class="form-row"><label>Дата</label><input type="datetime-local" id="chemDate" class="editable-field compact-datetime"></div>
+                        <div class="form-row"><label>Завоз, кг</label><input type="number" id="chemImport" class="editable-field" placeholder="Завоз"></div>
+                        <div class="form-row"><label>Расход, кг</label><input type="number" id="chemExpense" class="editable-field" placeholder="Расход"></div>
+                        <div class="form-row"><label>Остаток после окончания работ, кг</label><input type="number" id="chemRemain" class="editable-field" placeholder="Остаток"></div>
+                        <div class="form-row"><label>Наименование Хим. реагента</label><input type="text" id="chemName" class="editable-field" placeholder="Наименование"></div>
+                        <div class="form-row"><label>Номер партии</label><input type="text" id="chemBatch" class="editable-field" placeholder="Партия"></div>
+                        <div class="form-row"><label>Объем, кг</label><input type="number" id="chemTotalVol" class="editable-field" placeholder="Объем"></div>
+                        <div class="form-row"><label>Вид выполняемой тех. операции</label><input type="text" id="chemOperation" class="editable-field" placeholder="Операция"></div>
+                        <div class="form-row"><label>Использовано, кг</label><input type="number" id="chemUsed" class="editable-field" placeholder="Использовано"></div>
+                        <button class="btn btn-primary" id="addChemicalBtn">➕ Добавить запись</button>
+                        <div id="chemicalListPanel" class="items-list" style="margin-top: 20px; max-height: 300px;"></div>
                     </div>
                 </div>
             </div>
@@ -883,7 +934,7 @@
                     <div style="text-align: center; padding: 20px;">
                         <div style="font-size: 48px;">📊</div>
                         <h2>ТКРС - Сетевое планирование</h2>
-                        <p style="margin-top: 16px;">Версия 2.0<br>Система управления бригадами</p>
+                        <p style="margin-top: 16px;">Версия 3.0<br>Система управления бригадами</p>
                         <div class="info-text">© 2025 Все права защищены</div>
                     </div>
                 </div>
@@ -904,7 +955,7 @@
     </button>
     <button class="nav-item" data-nav="nsj">
         <span>💧</span>
-        <span>НСЖ</span>
+        <span>Учет</span>
     </button>
     <button class="nav-item" data-nav="allBrigades">
         <span>🏢</span>
@@ -960,8 +1011,8 @@
     }
 
     // ========== SUPABASE КОНФИГ ==========
-    const SUPABASE_URL = 'https://rvwqkcljwwwstrgwound.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_Sv1P7c7hO2hifSkSCe6G9Q_HkMjxv-0';
+    const SUPABASE_URL = 'https://cilkfftdlfchezzqogyb.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_g0RX1ld7pcZ_hplw1c1aaQ_xvT1GeQS';
     const EDIT_PASSWORD = "tkrs2026";
     
     let cache = {};
@@ -991,25 +1042,60 @@
         accountingData[type].unshift(newRecord);
         saveAccountingData();
         renderAccountingLists();
+        loadAllAccountingDataAndRender();
         return newRecord;
     }
     
     function renderAccountingLists() {
         const equipList = document.getElementById('equipmentListPanel');
         if (equipList) {
-            if (!accountingData.equipment.length) equipList.innerHTML = '<div class="info-text">Нет записей об оборудовании</div>';
-            else equipList.innerHTML = accountingData.equipment.map(item => `<div class="item-card"><div class="item-title">📦 ${item.org} / ${item.name}</div><div>📅 Спуск: ${formatDateTime(item.start)} — Подъем: ${formatDateTime(item.end)}</div><div>⏱️ Наработка: ${item.hours} ч</div><div>📝 ${item.note || ''}</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
+            const filtered = accountingData.equipment.filter(item => item.brigade === currentBrigade);
+            if (!filtered.length) equipList.innerHTML = '<div class="info-text">Нет записей об оборудовании</div>';
+            else equipList.innerHTML = filtered.map(item => `<div class="item-card"><div class="item-title">📦 ${item.org} / ${item.name}</div><div>📅 Спуск: ${formatDateTime(item.start)} — Подъем: ${formatDateTime(item.end)}</div><div>⏱️ Наработка: ${item.hours} ч</div><div>📝 ${item.note || ''}</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
         }
         const fluidList = document.getElementById('fluidListPanel');
         if (fluidList) {
-            if (!accountingData.fluid.length) fluidList.innerHTML = '<div class="info-text">Нет записей о тех. жидкости</div>';
-            else fluidList.innerHTML = accountingData.fluid.map(item => `<div class="item-card"><div class="item-title">💧 ${item.point}</div><div>📅 ${formatDateTime(item.date)}</div><div>🧪 Плотность: ${item.density} г/см³ | Объем: ${item.volume} м³</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
+            const filtered = accountingData.fluid.filter(item => item.brigade === currentBrigade);
+            if (!filtered.length) fluidList.innerHTML = '<div class="info-text">Нет записей о тех. жидкости</div>';
+            else fluidList.innerHTML = filtered.map(item => `<div class="item-card"><div class="item-title">💧 ${item.point}</div><div>📅 ${formatDateTime(item.date)}</div><div>🧪 Плотность: ${item.density} г/см³ | Объем: ${item.volume} м³</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
         }
         const chemList = document.getElementById('chemicalListPanel');
         if (chemList) {
-            if (!accountingData.chemical.length) chemList.innerHTML = '<div class="info-text">Нет записей о хим. реагентах</div>';
-            else chemList.innerHTML = accountingData.chemical.map(item => `<div class="item-card"><div class="item-title">🧪 ${item.name} (партия ${item.batch})</div><div>📅 ${formatDateTime(item.date)}</div><div>📥 Завоз: ${item.import} кг | 📤 Расход: ${item.expense} кг | ⚖️ Остаток: ${item.remain} кг</div><div>📊 Использовано: ${item.used} кг | Операция: ${item.operation}</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
+            const filtered = accountingData.chemical.filter(item => item.brigade === currentBrigade);
+            if (!filtered.length) chemList.innerHTML = '<div class="info-text">Нет записей о хим. реагентах</div>';
+            else chemList.innerHTML = filtered.map(item => `<div class="item-card"><div class="item-title">🧪 ${item.name} (партия ${item.batch})</div><div>📅 ${formatDateTime(item.date)}</div><div>📥 Завоз: ${item.import} кг | 📤 Расход: ${item.expense} кг | ⚖️ Остаток: ${item.remain} кг</div><div>📊 Использовано: ${item.used} кг | Операция: ${item.operation}</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
         }
+    }
+    
+    async function loadAllAccountingDataAndRender() {
+        const equipmentContainer = document.getElementById('allEquipmentList');
+        const fluidContainer = document.getElementById('allFluidList');
+        const chemicalContainer = document.getElementById('allChemicalList');
+        
+        const allEquipment = [...accountingData.equipment].sort((a,b) => (b._timestamp || 0) - (a._timestamp || 0));
+        const allFluid = [...accountingData.fluid].sort((a,b) => (b._timestamp || 0) - (a._timestamp || 0));
+        const allChemical = [...accountingData.chemical].sort((a,b) => (b._timestamp || 0) - (a._timestamp || 0));
+        
+        if (equipmentContainer) {
+            if (!allEquipment.length) equipmentContainer.innerHTML = '<div class="info-text">Нет записей об оборудовании</div>';
+            else equipmentContainer.innerHTML = allEquipment.map(item => `<div class="item-card brigade-acc-item" data-brigade-name="${item.brigade}"><div class="item-title">📦 ${item.org} / ${item.name}</div><div>📅 Спуск: ${formatDateTime(item.start)} — Подъем: ${formatDateTime(item.end)}</div><div>⏱️ Наработка: ${item.hours} ч</div><div>📝 ${item.note || ''}</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
+        }
+        if (fluidContainer) {
+            if (!allFluid.length) fluidContainer.innerHTML = '<div class="info-text">Нет записей о тех. жидкости</div>';
+            else fluidContainer.innerHTML = allFluid.map(item => `<div class="item-card brigade-acc-item" data-brigade-name="${item.brigade}"><div class="item-title">💧 ${item.point}</div><div>📅 ${formatDateTime(item.date)}</div><div>🧪 Плотность: ${item.density} г/см³ | Объем: ${item.volume} м³</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
+        }
+        if (chemicalContainer) {
+            if (!allChemical.length) chemicalContainer.innerHTML = '<div class="info-text">Нет записей о хим. реагентах</div>';
+            else chemicalContainer.innerHTML = allChemical.map(item => `<div class="item-card brigade-acc-item" data-brigade-name="${item.brigade}"><div class="item-title">🧪 ${item.name} (партия ${item.batch})</div><div>📅 ${formatDateTime(item.date)}</div><div>📥 Завоз: ${item.import} кг | 📤 Расход: ${item.expense} кг | ⚖️ Остаток: ${item.remain} кг</div><div>📊 Использовано: ${item.used} кг | Операция: ${item.operation}</div><div class="small-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">${formatDateTime(item._timestamp)}</div></div>`).join('');
+        }
+        
+        document.querySelectorAll('.brigade-acc-item').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const brigadeName = el.dataset.brigadeName;
+                if (brigadeName) showBrigadeDetails(brigadeName, '');
+            });
+        });
     }
     
     let unlockedBrigades = {};
@@ -1442,6 +1528,9 @@
         let nsj = getLocalItemsForBrigade('nsj', brigadeName);
         let requests = getLocalItemsForBrigade('requests', brigadeName);
         let summaries = getLocalItemsForBrigade('summaries', brigadeName);
+        let equipment = accountingData.equipment.filter(item => item.brigade === brigadeName);
+        let fluid = accountingData.fluid.filter(item => item.brigade === brigadeName);
+        let chemical = accountingData.chemical.filter(item => item.brigade === brigadeName);
         if(supabaseClient && navigator.onLine) {
             try {
                 const [opsData, nsjData, reqData, sumData] = await Promise.all([
@@ -1457,7 +1546,7 @@
             } catch(e) {}
         }
         const sortByDate = (arr) => arr.sort((a,b) => (b._timestamp || 0) - (a._timestamp || 0));
-        return { operations: sortByDate(operations), nsj: sortByDate(nsj), requests: sortByDate(requests), summaries: sortByDate(summaries) };
+        return { operations: sortByDate(operations), nsj: sortByDate(nsj), requests: sortByDate(requests), summaries: sortByDate(summaries), equipment: equipment, fluid: fluid, chemical: chemical };
     }
     
     function renderDetailItems(items, type) {
@@ -1468,6 +1557,12 @@
             return items.map(item => `<div class="detail-item">📅 ${formatDateTime(item.datetime)}<br>💧 ${item.type || 'Нефть'}: ${item.volume} м³<br>${item.completed ? '✅ Выполнено' : '⏳ В ожидании'}<div class="detail-well">🛢️ ${item.well || '—'}</div><div class="timestamp">📅 ${item._timestamp ? formatDateTime(item._timestamp) : '—'}</div></div>`).join('');
         } else if (type === 'req') {
             return items.map(item => `<div class="detail-item">📋 ${item.type}<br>Действие: ${item.action}<br>📅 ${formatDateTime(item.deadline)}<br>📝 ${item.note || ''}<div class="detail-well">🛢️ ${item.well || '—'}</div><div class="timestamp">📅 ${item._timestamp ? formatDateTime(item._timestamp) : '—'}</div></div>`).join('');
+        } else if (type === 'equipment') {
+            return items.map(item => `<div class="detail-item">📦 ${item.org} / ${item.name}<br>📅 Спуск: ${formatDateTime(item.start)} — Подъем: ${formatDateTime(item.end)}<br>⏱️ Наработка: ${item.hours} ч<br>📝 ${item.note || ''}<div class="detail-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">📅 ${item._timestamp ? formatDateTime(item._timestamp) : '—'}</div></div>`).join('');
+        } else if (type === 'fluid') {
+            return items.map(item => `<div class="detail-item">💧 ${item.point}<br>📅 ${formatDateTime(item.date)}<br>🧪 Плотность: ${item.density} г/см³ | Объем: ${item.volume} м³<div class="detail-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">📅 ${item._timestamp ? formatDateTime(item._timestamp) : '—'}</div></div>`).join('');
+        } else if (type === 'chemical') {
+            return items.map(item => `<div class="detail-item">🧪 ${item.name} (партия ${item.batch})<br>📅 ${formatDateTime(item.date)}<br>📥 Завоз: ${item.import} кг | 📤 Расход: ${item.expense} кг | ⚖️ Остаток: ${item.remain} кг<br>📊 Использовано: ${item.used} кг | Операция: ${item.operation}<div class="detail-well">🏭 ${item.brigade} | 🛢️ ${item.well}</div><div class="timestamp">📅 ${item._timestamp ? formatDateTime(item._timestamp) : '—'}</div></div>`).join('');
         } else {
             return items.map(item => `<div class="detail-item">📊 ${item.volume || 'Работа'}<br>📅 ${formatDateTime(item.start_datetime)} — ${formatDateTime(item.end_datetime)}<br>${item.file ? `<a href="${item.file}" target="_blank">📎 Ссылка на файл</a>` : '📎 —'}<div class="detail-well">🛢️ ${item.well || '—'}</div><div class="timestamp">📅 ${item._timestamp ? formatDateTime(item._timestamp) : '—'}</div></div>`).join('');
         }
@@ -1477,7 +1572,7 @@
         const details = await loadBrigadeDetails(brigadeName);
         const modal = document.createElement('div');
         modal.className = 'brigade-detail-modal';
-        modal.innerHTML = `<div class="brigade-detail-content"><span class="close-modal">&times;</span><h2>🏭 ${brigadeName}</h2><p style="font-size: 13px; color: #666;">🛢️ ${brigadeWell}</p><div class="brigade-detail-tabs"><div class="detail-tab active" data-detail-tab="ops">📊 План (${details.operations.length})</div><div class="detail-tab" data-detail-tab="nsj">💧 НСЖ (${details.nsj.length})</div><div class="detail-tab" data-detail-tab="req">📋 Заявки (${details.requests.length})</div><div class="detail-tab" data-detail-tab="sum">📈 Сводка (${details.summaries.length})</div></div><div id="detailContent" class="detail-list">${renderDetailItems(details.operations, 'ops')}</div></div>`;
+        modal.innerHTML = `<div class="brigade-detail-content"><span class="close-modal">&times;</span><h2>🏭 ${brigadeName}</h2><p style="font-size: 13px; color: #666;">🛢️ ${brigadeWell}</p><div class="brigade-detail-tabs"><div class="detail-tab active" data-detail-tab="ops">📊 План (${details.operations.length})</div><div class="detail-tab" data-detail-tab="nsj">💧 НСЖ (${details.nsj.length})</div><div class="detail-tab" data-detail-tab="req">📋 Заявки (${details.requests.length})</div><div class="detail-tab" data-detail-tab="sum">📈 Сводка (${details.summaries.length})</div><div class="detail-tab" data-detail-tab="equipment">📦 Оборудование (${details.equipment.length})</div><div class="detail-tab" data-detail-tab="fluid">💧 Техжидкость (${details.fluid.length})</div><div class="detail-tab" data-detail-tab="chemical">🧪 Химреагенты (${details.chemical.length})</div></div><div id="detailContent" class="detail-list">${renderDetailItems(details.operations, 'ops')}</div></div>`;
         document.body.appendChild(modal);
         modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
         modal.querySelectorAll('.detail-tab').forEach(tab => {
@@ -1485,7 +1580,7 @@
                 modal.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 const type = tab.dataset.detailTab;
-                let items = type === 'ops' ? details.operations : (type === 'nsj' ? details.nsj : (type === 'req' ? details.requests : details.summaries));
+                let items = type === 'ops' ? details.operations : (type === 'nsj' ? details.nsj : (type === 'req' ? details.requests : (type === 'sum' ? details.summaries : (type === 'equipment' ? details.equipment : (type === 'fluid' ? details.fluid : details.chemical)))));
                 document.getElementById('detailContent').innerHTML = renderDetailItems(items, type);
             });
         });
@@ -1505,34 +1600,52 @@
         }
         const container = document.getElementById('allNsjPendingList');
         if (!all.length) { container.innerHTML = '<div class="info-text">Нет невыполненных вывозов</div>'; return; }
-        container.innerHTML = all.map(i => `<div class="item-card"><strong>🏭 ${i.brigade}</strong><div class="small-well">🛢️ Скв: ${i.well}</div><div>📅 ${formatDateTime(i.datetime)}</div><div>💧 ${i.cdng}: ${i.volume} м³</div><div class="timestamp">📅 ${i._timestamp ? formatDateTime(i._timestamp) : '—'}</div></div>`).join('');
+        container.innerHTML = all.map(i => `<div class="item-card brigade-acc-item" data-brigade-name="${i.brigade}"><strong>🏭 ${i.brigade}</strong><div class="small-well">🛢️ Скв: ${i.well}</div><div>📅 ${formatDateTime(i.datetime)}</div><div>💧 ${i.cdng}: ${i.volume} м³</div><div class="timestamp">📅 ${i._timestamp ? formatDateTime(i._timestamp) : '—'}</div></div>`).join('');
+        document.querySelectorAll('#allNsjPendingList .brigade-acc-item').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const brigadeName = el.dataset.brigadeName;
+                if (brigadeName) showBrigadeDetails(brigadeName, '');
+            });
+        });
     }
     
-    function setupBrigadeTabs() {
-        const statsTab = document.querySelector('[data-brigade-tab="stats"]');
-        const nsjTab = document.querySelector('[data-brigade-tab="nsjAll"]');
-        const accountingTab = document.querySelector('[data-brigade-tab="accounting"]');
-        const statsPanel = document.getElementById('brigadeStatsPanel');
-        const nsjPanel = document.getElementById('nsjAllPanel');
-        const accountingPanel = document.getElementById('accountingPanel');
-        if (statsTab && nsjTab && accountingTab) {
-            statsTab.addEventListener('click', () => { statsTab.classList.add('active'); nsjTab.classList.remove('active'); accountingTab.classList.remove('active'); statsPanel.style.display = 'block'; nsjPanel.style.display = 'none'; accountingPanel.style.display = 'none'; });
-            nsjTab.addEventListener('click', async () => { nsjTab.classList.add('active'); statsTab.classList.remove('active'); accountingTab.classList.remove('active'); statsPanel.style.display = 'none'; nsjPanel.style.display = 'block'; accountingPanel.style.display = 'none'; await renderNsjAllPanel(); });
-            accountingTab.addEventListener('click', () => { accountingTab.classList.add('active'); statsTab.classList.remove('active'); nsjTab.classList.remove('active'); statsPanel.style.display = 'none'; nsjPanel.style.display = 'none'; accountingPanel.style.display = 'block'; renderAccountingLists(); });
-        }
-        
-        const accTabs = document.querySelectorAll('[data-acc-tab]');
+    function setupGlobalTabs() {
+        const globalTabs = document.querySelectorAll('.global-acc-tab');
         const sections = {
-            equipment: document.getElementById('equipmentSection'),
-            fluid: document.getElementById('fluidSection'),
-            chemical: document.getElementById('chemicalSection')
+            stats: document.getElementById('statsPanel'),
+            nsjAll: document.getElementById('nsjAllPanel'),
+            equipmentAll: document.getElementById('equipmentAllPanel'),
+            fluidAll: document.getElementById('fluidAllPanel'),
+            chemicalAll: document.getElementById('chemicalAllPanel')
         };
-        accTabs.forEach(tab => {
+        globalTabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                accTabs.forEach(t => t.classList.remove('active'));
+                globalTabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 Object.values(sections).forEach(s => { if (s) s.classList.remove('active'); });
-                const type = tab.dataset.accTab;
+                const type = tab.dataset.globalTab;
+                if (sections[type]) sections[type].classList.add('active');
+                if (type === 'nsjAll') renderNsjAllPanel();
+                if (type === 'equipmentAll' || type === 'fluidAll' || type === 'chemicalAll') loadAllAccountingDataAndRender();
+            });
+        });
+    }
+    
+    function setupAccountingMainTabs() {
+        const mainTabs = document.querySelectorAll('[data-acc-main]');
+        const sections = {
+            nsj: document.getElementById('nsjAccountingSection'),
+            fluid: document.getElementById('fluidAccountingSection'),
+            equipment: document.getElementById('equipmentAccountingSection'),
+            chemical: document.getElementById('chemicalAccountingSection')
+        };
+        mainTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                mainTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                Object.values(sections).forEach(s => { if (s) s.classList.remove('active'); });
+                const type = tab.dataset.accMain;
                 if (sections[type]) sections[type].classList.add('active');
                 renderAccountingLists();
             });
@@ -1780,7 +1893,7 @@
             else { if (tabContents[tabId]) tabContents[tabId].style.display = 'block'; }
             navItems.forEach(item => { item.classList.remove('active'); if (item.dataset.nav === tabId) item.classList.add('active'); });
         }
-        navItems.forEach(item => { item.addEventListener('click', () => { const tabId = item.dataset.nav; showTab(tabId); if (tabId === 'allBrigades') { loadAllBrigadesStatsAndRender(); setupBrigadeTabs(); } if (tabId === 'requests') updateRequestHintFromRules(); }); });
+        navItems.forEach(item => { item.addEventListener('click', () => { const tabId = item.dataset.nav; showTab(tabId); if (tabId === 'allBrigades') { loadAllBrigadesStatsAndRender(); setupGlobalTabs(); } if (tabId === 'requests') updateRequestHintFromRules(); }); });
         showTab('graph');
     }
     
@@ -1975,6 +2088,7 @@
         showToast("Запись об оборудовании добавлена");
         document.getElementById('eqOrg').value = ''; document.getElementById('eqName').value = ''; document.getElementById('eqStart').value = ''; document.getElementById('eqEnd').value = ''; document.getElementById('eqHours').value = ''; document.getElementById('eqNote').value = '';
         renderAccountingLists();
+        loadAllAccountingDataAndRender();
     });
     document.getElementById('addFluidBtn')?.addEventListener('click', () => {
         if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
@@ -1987,6 +2101,7 @@
         showToast("Запись о тех. жидкости добавлена");
         document.getElementById('fluidDate').value = ''; document.getElementById('fluidPoint').value = ''; document.getElementById('fluidDensity').value = ''; document.getElementById('fluidVolume').value = '';
         renderAccountingLists();
+        loadAllAccountingDataAndRender();
     });
     document.getElementById('addChemicalBtn')?.addEventListener('click', () => {
         if (!isCurrentBrigadeEditable()) { showToast("Нет прав для добавления"); return; }
@@ -2004,6 +2119,7 @@
         showToast("Запись о хим. реагенте добавлена");
         document.getElementById('chemDate').value = ''; document.getElementById('chemImport').value = ''; document.getElementById('chemExpense').value = ''; document.getElementById('chemRemain').value = ''; document.getElementById('chemName').value = ''; document.getElementById('chemBatch').value = ''; document.getElementById('chemTotalVol').value = ''; document.getElementById('chemOperation').value = ''; document.getElementById('chemUsed').value = '';
         renderAccountingLists();
+        loadAllAccountingDataAndRender();
     });
     
     lastActivityTime = Date.now();
@@ -2015,7 +2131,8 @@
     initBottomNav();
     initCollapsibleCard();
     updateUIBasedOnMode();
-    setupBrigadeTabs();
+    setupGlobalTabs();
+    setupAccountingMainTabs();
     
     const script = document.createElement('script'); script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'; script.onload = () => { initSupabase(); }; document.head.appendChild(script);
 </script>
